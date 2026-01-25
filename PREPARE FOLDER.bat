@@ -20,7 +20,16 @@ git fetch --all
 git reset --hard origin/main
 git clean -fd
 
+git add .
+set user_message=Website Deployed %date% %time%
+git commit -m "%user_message%"
+git push -u origin main
+if %errorlevel% neq 0 (
+    echo [ERROR] Push failed. Check your internet or login credentials.
+) else (
+    echo [SUCCESS] Push complete!
+)
 
 echo.
-echo Done!
+
 pause
