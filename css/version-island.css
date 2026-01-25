@@ -1,0 +1,126 @@
+/* System Version Island Styles */
+.version-island {
+    /* Glassmorphism effect */
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.15), 
+        rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    
+    /* Borders and shadows */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px; /* Pill shape */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    
+    /* Layout */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    
+    /* Typography */
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text-color);
+    
+    /* Interaction */
+    cursor: default;
+    user-select: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Ensure visibility over other elements */
+    position: relative;
+    z-index: 1000;
+}
+
+/* Hover effect */
+.version-island:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.25), 
+        rgba(255, 255, 255, 0.1));
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Icon Styles */
+.version-icon {
+    width: 16px;
+    height: 16px;
+    color: #A67B5B; /* Coffee brand color */
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.version-island:hover .version-icon {
+    transform: rotate(15deg);
+}
+
+/* Text Styles */
+.version-text {
+    white-space: nowrap;
+    opacity: 0.9;
+}
+
+/* --- Login Screen Positioning --- */
+.version-island-login {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 9999; /* Highest z-index to stay on top of background beans */
+}
+
+/* Mobile adjustments for login */
+@media (max-width: 480px) {
+    .version-island-login {
+        bottom: 15px;
+        left: 15px;
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+}
+
+/* --- Sidebar Positioning --- */
+.version-island-sidebar {
+    margin: auto 12px 20px 12px;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Minimized sidebar state - Only show icon */
+.sidebar:not(:hover) .version-island-sidebar {
+    padding: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Circle shape when minimized */
+    margin: auto auto 20px auto; /* Center horizontally */
+}
+
+.sidebar:not(:hover) .version-island-sidebar .version-text {
+    display: none;
+    opacity: 0;
+    width: 0;
+}
+
+/* Sidebar hover state or when expanded */
+.sidebar:hover .version-island-sidebar {
+    width: auto;
+    border-radius: 50px;
+    padding: 8px 16px;
+}
+
+.sidebar:hover .version-island-sidebar .version-text {
+    display: block;
+    opacity: 1;
+    width: auto;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-5px); }
+    to { opacity: 1; transform: translateX(0); }
+}

@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>The Brew Cave — Login</title>
+	<link rel="icon" type="image/x-icon" href="images/icon.png">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/version-island.css">
+	<link rel="stylesheet" href="css/landscape-restriction.css">
+	<script src="js/swal2.js"></script>
+</head>
+
+<body>
+	<div id="splash" role="dialog" aria-label="Loading The Brew Cave">
+		<div class="splash-content">
+			<span class="splash-text">THE</span>
+			<span class="splash-text">BREW</span>
+			<span class="splash-text">CAVE</span>
+		</div>
+	</div>
+
+	<!-- Background beans (will animate in after splash) -->
+	<div class="beans" id="beans" aria-hidden="true">
+		<!-- Large faint background bean (top-right) -->
+		<div class="bean big faint"
+			style="left:82%;top:-5%;--fromX:120vw;--fromY:-40vh;--rot:-360deg;--scale:1;--toRot:-12deg;--toScale:1;"
+			data-delay="0.06">
+			<div class="bean-animator" style="animation-delay: -2s;">
+				<img src="images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+				<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<ellipse cx="32" cy="32" rx="28" ry="40" fill="#efcdb3" />
+				</svg>
+			</div>
+		</div>
+
+		<!-- Large faint background bean (bottom-right) -->
+		<div class="bean big faint"
+			style="left:75%;top:75%;--fromX:120vw;--fromY:40vh;--rot:360deg;--scale:1;--toRot:18deg;--toScale:1;"
+			data-delay="0.12">
+			<div class="bean-animator" style="animation-delay: -5s;">
+				<img src="images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+				<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<ellipse cx="32" cy="32" rx="28" ry="40" fill="#efcdb3" />
+				</svg>
+			</div>
+		</div>
+
+		<!-- Small left-top accent -->
+		<div class="bean med faint"
+			style="left:-2%;top:10%;--fromX:-120vw;--fromY:-25vh;--rot:-540deg;--scale:1;--toRot:-8deg;--toScale:1;"
+			data-delay="0.02">
+			<div class="bean-animator" style="animation-delay: -1s;">
+				<img src="images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+				<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<ellipse cx="32" cy="32" rx="20" ry="28" fill="#e9d4bf" />
+				</svg>
+			</div>
+		</div>
+
+		<!-- Left bottom medium -->
+		<div class="bean med faint"
+			style="left:5%;top:80%;--fromX:-100vw;--fromY:40vh;--rot:420deg;--scale:1;--toRot:6deg;--toScale:1;"
+			data-delay="0.18">
+			<div class="bean-animator" style="animation-delay: -7s;">
+				<img src="images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+				<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<ellipse cx="32" cy="32" rx="22" ry="30" fill="#efd7c0" />
+				</svg>
+			</div>
+		</div>
+
+		<!-- Center small beans -->
+		<div class="bean sm solid"
+			style="left:15%;top:45%;--fromX:0px;--fromY:120vh;--rot:600deg;--scale:0.9;--toRot:0deg;--toScale:1;"
+			data-delay="0.22">
+			<div class="bean-animator" style="animation-delay: -3.5s;">
+				<img src="images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+				<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<ellipse cx="32" cy="32" rx="12" ry="18" fill="#b78454" />
+				</svg>
+			</div>
+		</div>
+		<div class="bean sm solid"
+			style="left:90%;top:40%;--fromX:0px;--fromY:120vh;--rot:520deg;--scale:0.9;--toRot:6deg;--toScale:1;"
+			data-delay="0.28">
+			<div class="bean-animator" style="animation-delay: -4.5s;">
+				<img src="images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+				<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<ellipse cx="32" cy="32" rx="12" ry="18" fill="#b78454" />
+				</svg>
+			</div>
+		</div>
+		<div class="bean sm solid"
+			style="left:45%;top:88%;--fromX:-100vw;--fromY:60vh;--rot:-680deg;--scale:0.95;--toRot:-6deg;--toScale:1;"
+			data-delay="0.32">
+			<div class="bean-animator" style="animation-delay: -6s;">
+				<img src="images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+				<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+					<ellipse cx="32" cy="32" rx="12" ry="18" fill="#b78454" />
+				</svg>
+			</div>
+		</div>
+	</div>
+
+	<!-- Main content with Login UI (replaces placeholder) -->
+	<main>
+		<div class="container">
+			<div class="login-wrapper">
+				<div class="login-card" id="loginCard" role="region" aria-label="Login form">
+					<div class="login-left">
+						<strong>
+							<h1 class="brand">THE BREW CAVE</h1>
+						</strong>
+						<p class="desc">Welcome back — sign in to continue to your dashboard.</p>
+						<form id="loginForm" aria-label="Sign in form" onsubmit="handleLogin(event)">
+							<div class="form-row">
+								<label for="username">Username</label>
+								<input id="username" name="username" type="text" placeholder="username" maxlength="20">
+							</div>
+							<div class="form-row">
+								<label for="password">Password</label>
+								<div class="password-wrapper">
+									<input id="password" name="password" type="text" placeholder="••••••••"
+										maxlength="20" autocomplete="off">
+									<button type="button" class="password-toggle" id="passwordToggle"
+										aria-label="Show password">
+										<!-- Eye icon with slash (hidden state) -->
+										<svg class="eye-icon eye-hidden" xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+											stroke-linecap="round" stroke-linejoin="round">
+											<path
+												d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+											</path>
+											<line x1="1" y1="1" x2="23" y2="23"></line>
+										</svg>
+										<!-- Eye icon without slash (visible state) -->
+										<svg class="eye-icon eye-visible" xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+											stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+											<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+											<circle cx="12" cy="12" r="3"></circle>
+										</svg>
+									</button>
+								</div>
+							</div>
+							<div class="form-row">
+								<button class="primary" type="submit">Sign in</button>
+							</div>
+							<div class="legal-text">
+								<p>By logging in, you agree to the <br>
+									<a href="#" onclick="showTermsModal(event)">Terms of Service</a> &
+									<a href="#" onclick="showPrivacyModal(event)">Privacy Policy</a>.
+								</p>
+							</div>
+						</form>
+					</div>
+					<div class="login-right">
+						<video class="cup" id="coffeeCup" autoplay muted playsinline
+							style="animation: float-cup 5s ease-in-out infinite;">
+							<source src="videos/slideshow/1.mp4" type="video/mp4">
+						</video>
+						<!-- Fallback minimal SVG if image missing -->
+						<svg id="cupFallback" class="cup" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"
+							aria-hidden="true" style="display:none">
+							<g fill="none" fill-rule="evenodd">
+								<rect x="12" y="28" width="96" height="60" rx="10" fill="#d9b89a" />
+								<rect x="20" y="24" width="80" height="12" rx="6" fill="#8b4b2b" />
+								<ellipse cx="60" cy="58" rx="30" ry="16" fill="#6b2f12" opacity="0.18" />
+							</g>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<!-- System Version Island -->
+	<div class="version-island version-island-login">
+		<svg class="version-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+			fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<circle cx="12" cy="12" r="10"></circle>
+			<line x1="12" y1="16" x2="12" y2="12"></line>
+			<line x1="12" y1="8" x2="12.01" y2="8"></line>
+		</svg>
+		<span class="version-text">System v4.3</span>
+	</div>
+
+	<!-- Theme Switcher -->
+	<div class="theme-switcher">
+		<button id="theme-toggle-button" type="button" aria-label="Toggle theme"
+			style="border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; padding: 0; border: none; cursor: pointer;">
+			<!-- Icon will be set by JS -->
+		</button>
+		<ul class="dropdown-menu" id="theme-menu" aria-labelledby="theme-toggle-button">
+			<li>
+				<button class="dropdown-item" type="button" data-theme-value="light">
+					<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+						<path
+							d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+					</svg>
+					Light
+				</button>
+			</li>
+			<li>
+				<button class="dropdown-item" type="button" data-theme-value="dark">
+					<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+						<path
+							d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+					</svg>
+					Dark
+				</button>
+			</li>
+			<li>
+				<button class="dropdown-item" type="button" data-theme-value="auto">
+					<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+						<path d="M8 15A7 7 0 1 0 8 1v14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z" />
+					</svg>
+					Auto
+				</button>
+			</li>
+		</ul>
+	</div>
+
+	<script src="js/main.js" defer></script>
+	<script src="js/color-modes.js" defer></script>
+</body>
+
+</html>

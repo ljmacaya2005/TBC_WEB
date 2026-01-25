@@ -1,0 +1,118 @@
+/* View Orders Stylings */
+
+.orders-container {
+    background: var(--card-bg, #fff);
+    /* Fallback to white if var missing */
+    border-radius: 20px;
+    padding: 20px;
+    margin: 20px auto;
+    width: 100%;
+    /* Force full width */
+    max-width: 100%;
+    /* Remove restriction */
+
+    /* "Floating" Realism - Realistic Shadow */
+    box-shadow:
+        0 10px 30px -5px rgba(0, 0, 0, 0.1),
+        0 8px 10px -5px rgba(0, 0, 0, 0.05);
+    /* Soft grounded shadow */
+
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* Subtle border definition */
+
+    /* Ensure no continuous animation */
+    animation: none !important;
+    transform: none !important;
+    transition: box-shadow 0.3s ease;
+    /* Only transition on interaction if needed */
+}
+
+/* Optional hover effect for the container itself to feel interactive but stable */
+.orders-container:hover {
+    box-shadow:
+        0 20px 40px -5px rgba(0, 0, 0, 0.12),
+        0 10px 15px -5px rgba(0, 0, 0, 0.06);
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.orders-table th {
+    text-align: left;
+    padding: 20px;
+    font-weight: 700;
+    color: var(--text-color, #333);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.orders-table td {
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    vertical-align: middle;
+    color: var(--text-color, #555);
+}
+
+.orders-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Row hover effect */
+.orders-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.orders-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Empty State Styling */
+#ordersList td {
+    text-align: center;
+    padding: 60px;
+    color: #888;
+    font-style: italic;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .orders-container {
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .orders-table th,
+    .orders-table td {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+}
