@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>The Brew Cave — Login & Dashboard</title>
+	<style>
+		/* Basic reset */
+		html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif}
+		/* Splash overlay */
+		#splash{
+			position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+			background:linear-gradient(180deg,#0f172a 0%, #071026 100%);color:#fff;z-index:9999;
+			transition:opacity .6s ease,visibility .6s ease;}
+		#splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+		.title{font-size:2.4rem;letter-spacing:4px;text-align:center;margin:0}
+		.typed{display:inline-block;white-space:pre}
+		.cursor{display:inline-block;width:10px;height:28px;background:linear-gradient(90deg,#fff0,#fff);margin-left:6px;animation:blink .9s steps(2) infinite}
+		.cursor.hidden{opacity:0;animation:none;width:0;margin-left:0;transition:opacity .18s linear}
+		@keyframes blink{50%{opacity:0}}
+		 .loader{margin-top:20px;width:44px;height:44px;border-radius:50%;position:relative;opacity:0;transform:translateY(6px);transition:opacity .25s ease,transform .25s ease}
+		 /* Use a pseudo-element for the rotating ring so translate/transform on the wrapper
+			 don't get overridden by the animation. */
+		 .loader::before{content:"";position:absolute;inset:0;border-radius:50%;box-sizing:border-box;border:4px solid rgba(255,255,255,0.12);border-top-color:#ffd166;transform-origin:center center;animation:spin 1s linear infinite}
+		 .loader.visible{opacity:1;transform:translateY(0)}
+		@keyframes spin{to{transform:rotate(360deg)}}
+
+		/* Main page content (hidden under splash) */
+		main{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+		.container{max-width:900px;padding:24px}
+
+		/* Login card */
+		.login-wrapper{display:flex;align-items:center;justify-content:center;min-height:60vh}
+		.login-card{background:rgba(255,255,255,0.98);backdrop-filter:blur(6px);border-radius:14px;box-shadow:0 10px 30px rgba(11,22,33,0.12);display:flex;overflow:visible;max-width:920px;width:92%;max-height:520px}
+		.login-left{flex:1;padding:48px 40px}
+		.login-right{width:360px;background:linear-gradient(180deg,#fff 0%,#fbf7f3 100%);display:flex;align-items:center;justify-content:center;padding:28px;overflow:visible;position:relative}
+		.brand{font-weight:700;color:#4b2b19;letter-spacing:1px;margin:0 0 8px 0}
+		.desc{color:#6b4f3a;margin:0 0 20px 0}
+		.form-row{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+		input[type="text"],input[type="password"]{padding:12px 14px;border:1px solid #e6ddd2;border-radius:8px;font-size:15px}
+		button.primary{background:#6b2f12;color:#fff;border:none;padding:12px 16px;border-radius:10px;font-weight:600;cursor:pointer}
+
+		/* Entrance animation for the card */
+		.login-card{opacity:0;transform:translateY(18px) scale(.996);transition:opacity .52s cubic-bezier(.2,.9,.2,1),transform .6s cubic-bezier(.2,.9,.2,1)}
+		.login-card.show{opacity:1;transform:translateY(0) scale(1)}
+
+		/* Coffee cup animation */
+		/* Make cup intentionally large (can overflow the right panel without resizing the card) */
+		.cup{width:420px;height:auto;max-width:none;transform-origin:center center;display:block}
+		.cup.float{animation:bob 3.6s ease-in-out infinite}
+		@keyframes bob{0%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-10px) rotate(0deg)}100%{transform:translateY(0) rotate(-6deg)}}
+
+		/* Small responsive tweaks */
+		@media (max-width:820px){
+			.login-card{flex-direction:column}
+			.login-right{width:100%;padding:18px}
+			.login-left{padding:24px}
+			.cup{width:260px}
+		}
+
+		/* Phone-specific adjustments */
+		@media (max-width:480px){
+			.login-card{width:96%;max-width:420px;margin:18px auto;padding:12px;box-shadow:0 8px 20px rgba(11,22,33,0.08)}
+			.login-left{padding:18px}
+			/* Place cup above the form and remove the right-panel white block on phones */
+			.login-right{width:100%;padding:6px 0;order:-1;display:flex;justify-content:center;align-items:center;background:transparent}
+			.brand{font-size:18px}
+			.desc{font-size:13px}
+			.form-row label{font-size:13px}
+			input[type="text"],input[type="password"]{font-size:15px;padding:14px}
+			button.primary{width:100%;padding:14px;font-size:16px}
+			/* Make the cup smaller, centered and not force the card height on phones */
+			.cup{width:180px;margin:0;display:block}
+			/* ensure beans don't overlap important UI on very small screens and hide very large shapes */
+			.beans{pointer-events:none}
+			.beans .bean.big{display:none}
+		}
+
+		/* Background beans layer */
+		.beans{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+		.bean{
+			position:absolute;transform-origin:center center;transition:transform 900ms cubic-bezier(.2,.9,.2,1),opacity 600ms ease;opacity:0;display:flex;align-items:center;justify-content:center}
+		.bean img, .bean .bean-fallback{width:100%;height:100%;object-fit:contain;display:block}
+		.bean.arrived{transform:translate(0,0) rotate(var(--toRot,0deg)) scale(var(--toScale,1));opacity:1}
+
+		/* initial offscreen transform uses custom properties --fromX/--fromY and --rot --scale */
+		.bean{--fromX:0px;--fromY:120vh;--rot:720deg;--scale:1;transform:translate(var(--fromX), var(--fromY)) rotate(var(--rot)) scale(var(--scale))}
+
+		/* Size utility classes and uniform opacity for background shapes */
+		.bean.big{width:420px;height:320px}
+		.bean.med{width:180px;height:160px}
+		.bean.sm{width:88px;height:88px}
+		/* All bean images and fallback svgs use the same opacity for visual consistency */
+		.bean img, .bean .bean-fallback{opacity:0.14}
+
+
+		/* Reduce motion preferences */
+		@media (prefers-reduced-motion: reduce){
+			.cursor, .loader::before{animation:none}
+			#splash{transition:none}
+		}
+	</style>
+</head>
+<body>
+
+	<!-- Splash screen overlay -->
+	<div id="splash" role="dialog" aria-label="Loading The Brew Cave">
+		<h1 class="title"><span id="typed" class="typed"></span><span class="cursor" aria-hidden="true"></span></h1>
+		<div id="loader" class="loader" aria-hidden="true"></div>
+	</div>
+
+	<!-- Background beans (will animate in after splash) -->
+	<div class="beans" id="beans" aria-hidden="true">
+		<!-- Large faint background bean (top-right) -->
+		<div class="bean big faint" style="left:64%;top:2%;--fromX:120vw;--fromY:-40vh;--rot:-360deg;--scale:1;--toRot:-12deg;--toScale:1;" data-delay="0.06">
+			<img src="Images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+			<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<ellipse cx="32" cy="32" rx="28" ry="40" fill="#efcdb3"/>
+			</svg>
+		</div>
+
+		<!-- Large faint background bean (bottom-right) -->
+		<div class="bean big faint" style="left:68%;top:48%;--fromX:120vw;--fromY:40vh;--rot:360deg;--scale:1;--toRot:18deg;--toScale:1;" data-delay="0.12">
+			<img src="Images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+			<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<ellipse cx="32" cy="32" rx="28" ry="40" fill="#efcdb3"/>
+			</svg>
+		</div>
+
+		<!-- Small left-top accent -->
+		<div class="bean med faint" style="left:2%;top:4%;--fromX:-120vw;--fromY:-25vh;--rot:-540deg;--scale:1;--toRot:-8deg;--toScale:1;" data-delay="0.02">
+			<img src="Images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+			<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<ellipse cx="32" cy="32" rx="20" ry="28" fill="#e9d4bf"/>
+			</svg>
+		</div>
+
+		<!-- Left bottom medium -->
+		<div class="bean med faint" style="left:6%;top:70%;--fromX:-100vw;--fromY:40vh;--rot:420deg;--scale:1;--toRot:6deg;--toScale:1;" data-delay="0.18">
+			<img src="Images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+			<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<ellipse cx="32" cy="32" rx="22" ry="30" fill="#efd7c0"/>
+			</svg>
+		</div>
+
+		<!-- Center small beans -->
+		<div class="bean sm solid" style="left:34%;top:62%;--fromX:0px;--fromY:120vh;--rot:600deg;--scale:0.9;--toRot:0deg;--toScale:1;" data-delay="0.22">
+			<img src="Images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+			<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<ellipse cx="32" cy="32" rx="12" ry="18" fill="#b78454"/>
+			</svg>
+		</div>
+		<div class="bean sm solid" style="left:48%;top:58%;--fromX:0px;--fromY:120vh;--rot:520deg;--scale:0.9;--toRot:6deg;--toScale:1;" data-delay="0.28">
+			<img src="Images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+			<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<ellipse cx="32" cy="32" rx="12" ry="18" fill="#b78454"/>
+			</svg>
+		</div>
+		<div class="bean sm solid" style="left:18%;top:78%;--fromX:-100vw;--fromY:60vh;--rot:-680deg;--scale:0.95;--toRot:-6deg;--toScale:1;" data-delay="0.32">
+			<img src="Images/CoffeeBean.png" alt="coffee bean" onerror="this.style.display='none'">
+			<svg class="bean-fallback" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<ellipse cx="32" cy="32" rx="12" ry="18" fill="#b78454"/>
+			</svg>
+		</div>
+	</div>
+
+	<!-- Main content with Login UI (replaces placeholder) -->
+	<main>
+		<div class="container">
+			<div class="login-wrapper">
+				<div class="login-card" id="loginCard" role="region" aria-label="Login form">
+					<div class="login-left">
+						<h3 class="brand">THE BREW CAVE</h3>
+						<p class="desc">Welcome back — sign in to continue to your dashboard.</p>
+						<form id="loginForm" aria-label="Sign in form" onsubmit="event.preventDefault();alert('Signed in — replace with real auth');">
+							<div class="form-row">
+								<label for="email">Email</label>
+								<input id="email" name="email" type="text" placeholder="you@coffee.com" required>
+							</div>
+							<div class="form-row">
+								<label for="password">Password</label>
+								<input id="password" name="password" type="password" placeholder="••••••••" required>
+							</div>
+							<div class="form-row">
+								<button class="primary" type="submit">Sign in</button>
+							</div>
+						</form>
+					</div>
+					<div class="login-right">
+						<picture>
+							<source srcset="Images/CoffeeCup.png" type="image/png">
+							<img src="Images/CoffeeCup.png" alt="Coffee cup" class="cup" id="coffeeCup" onerror="this.style.display='none'">
+						</picture>
+						<!-- Fallback minimal SVG if image missing -->
+						<svg id="cupFallback" class="cup" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:none">
+							<g fill="none" fill-rule="evenodd">
+								<rect x="12" y="28" width="96" height="60" rx="10" fill="#d9b89a"/>
+								<rect x="20" y="24" width="80" height="12" rx="6" fill="#8b4b2b"/>
+								<ellipse cx="60" cy="58" rx="30" ry="16" fill="#6b2f12" opacity="0.18"/>
+							</g>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<script>
+		(function(){
+			const text = 'THE BREW CAVE';
+			const typedEl = document.getElementById('typed');
+			const cursor = document.querySelector('.cursor');
+			const loader = document.getElementById('loader');
+			const splash = document.getElementById('splash');
+
+			// Typing animation
+			let i = 0;
+			const typingSpeed = 100; // ms per character
+
+			function typeNext(){
+				if(i < text.length){
+					typedEl.textContent += text.charAt(i);
+					i++;
+					setTimeout(typeNext, typingSpeed);
+				} else {
+					// Finished typing: hide the cursor, show loader, then dismiss splash
+					if(cursor) cursor.classList.add('hidden');
+					showLoaderAndDismiss();
+				}
+			}
+
+			function showLoaderAndDismiss(){
+				// reveal loader
+				loader.classList.add('visible');
+				// wait a bit to simulate loading, then fade out splash
+				const totalWait = 1600; // ms
+				setTimeout(()=>{
+					splash.classList.add('hidden');
+						  // start bean and UI animation slightly after hiding splash
+						  setTimeout(()=>{ animateBeans(); animateUI(); }, 220);
+					// remove splash from DOM after transition to free up accessibility
+					setTimeout(()=>{ if(splash && splash.parentNode) splash.parentNode.removeChild(splash); }, 800);
+				}, totalWait);
+			}
+
+			// Start typing slightly after load to make it feel smooth
+			window.addEventListener('load', ()=>{
+				setTimeout(typeNext, 180);
+			});
+
+			// Optional: allow click to skip splash
+			splash.addEventListener('click', ()=>{
+				if(cursor) cursor.classList.add('hidden');
+				loader.classList.add('visible');
+				splash.classList.add('hidden');
+				// start beans and UI immediately when user skips
+				animateBeans();
+				animateUI();
+				setTimeout(()=>{ if(splash && splash.parentNode) splash.parentNode.removeChild(splash); }, 600);
+			});
+
+			// Beans animation: staggered arrival with rolling effect
+			function animateBeans(){
+				const beans = Array.from(document.querySelectorAll('.bean'));
+				if(!beans.length) return;
+				beans.forEach((bean, idx) => {
+					// optional per-bean delay via data-delay attribute
+					const baseDelay = (bean.dataset.delay ? parseFloat(bean.dataset.delay) : 0);
+					const delay = baseDelay * 1000 + idx * 120;
+					// Ensure final transform becomes translate(0,0) rotate(0deg) scale(1)
+					setTimeout(()=>{
+						bean.classList.add('arrived');
+					}, delay);
+				});
+			}
+
+			// UI animation: show login card and start cup float
+			function animateUI(){
+				const card = document.getElementById('loginCard');
+				const cup = document.getElementById('coffeeCup');
+				const cupFallback = document.getElementById('cupFallback');
+				if(card) setTimeout(()=>card.classList.add('show'), 180);
+				// If real image failed to load, show fallback and float it
+				if(cup && cup.style.display === 'none' && cupFallback){ cupFallback.style.display = 'block'; cupFallback.classList.add('float'); }
+				if(cup && cup.style.display !== 'none') cup.classList.add('float');
+			}
+		})();
+	</script>
+</body>
+</html>
+
