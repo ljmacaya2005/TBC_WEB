@@ -1,0 +1,108 @@
+
+after termux-setup-storage
+
+
+can you do one line paste in termux to execute all of this
+
+pkg update && pkg upgrade -y
+pkg install git dos2unix -y
+
+create the following folders needed:  /storage/emulated/0/WORKSPACE TREB/The Brew Cave/termux"
+
+git config --global --add safe.directory "/storage/emulated/0/WORKSPACE TREB/The Brew Cave"
+
+git config --global --add safe.directory "/storage/emulated/0/WORKSPACE TREB/The Brew Cave/termux"
+
+cd "/storage/emulated/0/WORKSPACE TREB/The Brew Cave"
+
+dos2unix *.sh
+
+echo "--- Git Global Configuration ---"
+read -p "Enter Git user.name (e.g. John Doe): " user_name
+read -p "Enter Git user.email (e.g. email@example.com): " user_email
+
+echo ""
+echo "Setting Git global configs..."
+git config --global user.name "$user_name"
+git config --global user.email "$user_email"
+
+echo ""
+echo "--- Verification ---"
+git config --global user.name
+git config --global user.email
+echo ""
+echo "Git config saved!"
+
+echo "--- Initialize Git Repository ---"
+# This will now create the .git folder in the parent directory
+git init
+
+git branch -M main
+
+clear
+echo "Repository initialized in: $(pwd)"
+echo ""
+
+github_name is ljmacaya2005 
+echo "Host Github Account: https://github.com/$github_name/"
+echo ""
+repo_name is TheBrewCave_By_Elevate
+
+echo ""
+echo "Adding remote origin..."
+git remote add origin "https://github.com/$github_name/$repo_name.git" || echo "Remote 'origin' already exists."
+
+echo ""
+echo "Done!"
+
+git fetch --all
+git reset --hard origin/main
+
+git config --global credential.helper store
+
+echo "Target Branch: [main]"
+echo "Working Directory: $(pwd)"
+echo ""
+
+echo "Adding all files..."
+git add .
+
+echo ""
+
+git commit -m "Termux Initialized"
+
+echo ""
+echo "Pushing branch 'main' to origin..."
+git push -u origin main
+
+echo ""
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Push failed. Check your internet or login credentials."
+else
+    echo "[SUCCESS] Push complete!"
+fi
+
+
+
+NOTES: for the github authentication use this:
+
+username: ljmacaya2005
+token for password: exampleexampleexample
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
