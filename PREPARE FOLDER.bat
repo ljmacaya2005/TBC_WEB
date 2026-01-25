@@ -15,6 +15,7 @@ echo.
 echo Adding remote origin...
 :: The || echo... part handles cases where origin already exists
 git remote add origin "https://github.com/ljmacaya2005/TBC_WEB.git" || echo Remote 'origin' already exists.
+cd .
 git fetch --all
 git reset --hard origin/main
 git clean -fd
