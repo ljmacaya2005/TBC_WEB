@@ -23,4 +23,3 @@ git clean -fd
 echo.
 echo Done!
 pause
-"OPERATIONS_MENU.bat"
