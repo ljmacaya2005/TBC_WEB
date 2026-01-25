@@ -1,7 +1,7 @@
 @echo off
 cls
 cd /d "%~dp0"
-cd ..\..
+cd .
 echo --- Initialize Git Repository ---
 git init
 
