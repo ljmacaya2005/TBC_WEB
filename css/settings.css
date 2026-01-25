@@ -1,5 +1,0 @@
-/* Settings Specific Styles */
-.glass-panel {
-    background: var(--card-bg, rgba(255, 255, 255, 0.7));
-    border-radius: 20px;
-}
