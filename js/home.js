@@ -2,9 +2,9 @@
   'use strict'
 
   // Check if user is logged in
-  if (!localStorage.getItem('isLoggedIn')) {
+  if (!sessionStorage.getItem('isLoggedIn')) {
     // Redirect to login if not authenticated
-    localStorage.setItem('showAuthAlert', 'true');
+    sessionStorage.setItem('showAuthAlert', 'true');
     window.location.href = 'index.html';
   }
 
@@ -138,9 +138,9 @@
         cancelButtonText: 'Cancel'
       }).then((result) => {
         if (result.isConfirmed) {
-          // Clear login state and theme from localStorage
-          localStorage.removeItem('isLoggedIn');
-          localStorage.removeItem('username');
+          // Clear login state from sessionStorage and theme from localStorage
+          sessionStorage.removeItem('isLoggedIn');
+          sessionStorage.removeItem('username');
           localStorage.removeItem('theme');
 
           // Show success message and redirect
@@ -186,7 +186,7 @@
     });
 
     // Set logged in username across UI
-    const username = localStorage.getItem('username');
+    const username = sessionStorage.getItem('username');
     if (username) {
       document.querySelectorAll('.user-name').forEach(el => el.textContent = username);
       document.querySelectorAll('.user-name-display').forEach(el => el.textContent = username);
