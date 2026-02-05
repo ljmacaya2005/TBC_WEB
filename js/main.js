@@ -376,8 +376,8 @@ window.onclick = function (event) {
 	}
 }
 
-// Login Handler Function
-function handleLogin(event) {
+// Login Handler Function with Firebase Authentication
+async function handleLogin(event) {
 	event.preventDefault();
 
 	const now = Date.now();
@@ -430,26 +430,74 @@ function handleLogin(event) {
 		return;
 	}
 
-	// Credentials
-	const validUsername = 'admin';
-	const validPassword = '123';
+	// Show loading state
+	Swal.fire({
+		title: 'Authenticating...',
+		text: 'Please wait',
+		allowOutsideClick: false,
+		didOpen: () => {
+			Swal.showLoading();
+		}
+	});
 
-	// Validate credentials
-	if (username === validUsername && password === validPassword) {
+	try {
+		// --- 3. AUTHENTICATE WITH FIREBASE ---
+		// Query Firestore for user with matching username
+		const userQuery = await FirebaseDB.queryDocuments(
+			FirebaseDB.COLLECTIONS.USERS,
+			[['username', '==', username]]
+		);
+
+		// Check if user exists
+		if (userQuery.length === 0) {
+			throw new Error('INVALID_CREDENTIALS');
+		}
+
+		const userDoc = userQuery[0];
+
+		// Check if user is active
+		if (userDoc.active === false) {
+			throw new Error('ACCOUNT_DISABLED');
+		}
+
+		// Verify password (in production, use hashed passwords!)
+		// For now, we'll check against a password field in the user document
+		if (userDoc.password !== password) {
+			throw new Error('INVALID_CREDENTIALS');
+		}
+
 		// --- SUCCESS: Clear all penalties ---
 		localStorage.removeItem('login_failed_attempts');
 		localStorage.removeItem('login_penalty_level');
 		localStorage.removeItem('login_lockout_end');
 		localStorage.removeItem('login_last_fail_time');
 
-		// Store login state in sessionStorage (ends when tab/browser closes)
+		// Store login state in sessionStorage
 		sessionStorage.setItem('isLoggedIn', 'true');
-		sessionStorage.setItem('username', username);
+		sessionStorage.setItem('username', userDoc.username);
+		sessionStorage.setItem('userId', userDoc.id);
+		sessionStorage.setItem('userRole', userDoc.role || 'staff');
+		sessionStorage.setItem('userFullName', userDoc.fullName || userDoc.username);
+
+		// Log successful login to Firebase
+		try {
+			await FirebaseDB.addDocument('loginHistory', {
+				userId: userDoc.id,
+				username: userDoc.username,
+				role: userDoc.role,
+				loginTime: new Date().toISOString(),
+				success: true,
+				ipAddress: 'N/A' // Can be enhanced with IP detection
+			});
+		} catch (logError) {
+			console.error('Failed to log login history:', logError);
+			// Don't block login if logging fails
+		}
 
 		// Show success alert and redirect
 		Swal.fire({
 			title: 'Login Successful!',
-			text: 'Redirecting...',
+			text: `Welcome back, ${userDoc.fullName || userDoc.username}!`,
 			icon: 'success',
 			showConfirmButton: false,
 			timer: 1500,
@@ -460,12 +508,37 @@ function handleLogin(event) {
 				window.location.href = 'home.html';
 			}
 		});
-	} else {
+
+	} catch (error) {
+		console.error('Login error:', error);
+
 		// --- FAILURE: Handle Penalties ---
 		let failedAttempts = parseInt(localStorage.getItem('login_failed_attempts') || '0', 10);
 		failedAttempts++;
 		localStorage.setItem('login_failed_attempts', failedAttempts);
 		localStorage.setItem('login_last_fail_time', now);
+
+		// Log failed login attempt to Firebase
+		try {
+			await FirebaseDB.addDocument('loginHistory', {
+				username: username,
+				loginTime: new Date().toISOString(),
+				success: false,
+				attempts: failedAttempts,
+				reason: error.message
+			});
+		} catch (logError) {
+			console.error('Failed to log failed attempt:', logError);
+		}
+
+		// Determine error message
+		let errorTitle = 'Login Failed';
+		let errorMessage = `Invalid username or password. You have ${3 - failedAttempts} attempt(s) remaining.`;
+
+		if (error.message === 'ACCOUNT_DISABLED') {
+			errorTitle = 'Account Disabled';
+			errorMessage = 'Your account has been disabled. Please contact an administrator.';
+		}
 
 		// Check for Lockout Trigger (every 3 attempts)
 		if (failedAttempts >= 3) {
@@ -482,12 +555,10 @@ function handleLogin(event) {
 			// Increase penalty level for next time
 			localStorage.setItem('login_penalty_level', penaltyLevel + 1);
 
-			// Reset failed attempts for the next batch? 
-			// User said: "then I try again three times..." => Implies counting 1,2,3 again.
+			// Reset failed attempts for the next batch
 			localStorage.setItem('login_failed_attempts', '0');
 
-			// Trigger visual update (dispatch event for the internal watcher)
-			// OR just force a quick UI update if we can reach the elements
+			// Trigger visual update
 			const usernameField = document.getElementById('username');
 			const passwordField = document.getElementById('password');
 			const submitBtn = document.querySelector('button[type="submit"]');
@@ -495,7 +566,7 @@ function handleLogin(event) {
 			if (passwordField) passwordField.disabled = true;
 			if (submitBtn) submitBtn.disabled = true;
 
-			// Dispatch event to kickstart the rAF loop in checkLockout immediately if it was idling
+			// Dispatch event to kickstart the rAF loop in checkLockout immediately
 			window.dispatchEvent(new Event('lockoutStart'));
 
 			Swal.fire({
@@ -506,10 +577,10 @@ function handleLogin(event) {
 				allowOutsideClick: false
 			});
 		} else {
-			// Show error alert using SweetAlert2
+			// Show error alert
 			Swal.fire({
-				title: 'Login Failed',
-				text: `Invalid username or password. You have ${3 - failedAttempts} attempt(s) remaining.`,
+				title: errorTitle,
+				text: errorMessage,
 				icon: 'error',
 				confirmButtonColor: '#7066e0',
 				timer: 3000,
