@@ -11,12 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (pInput) pInput.value = '';
 	window.actualPassword = '';
 
-	// --- STRICT SESSION LOCK: Clear session when visiting login page ---
-	// This ensures that if a user clicks "Back" from dashboard to here, 
-	// the session is destroyed. If they try to go "Forward", access is denied.
-	sessionStorage.removeItem('isLoggedIn');
-	sessionStorage.removeItem('username');
-
 	// --- Random Video Rotation for Coffee Cup ---
 	const coffeeCup = document.getElementById('coffeeCup');
 	const totalVideos = 6; // Number of videos in the slideshow folder
@@ -66,8 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		// --- CHECK FOR SESSION EXPIRATION ---
 		const urlParams = new URLSearchParams(window.location.search);
 		if (urlParams.get('session_expired') === 'true') {
-			// Clear session storage just in case
-			sessionStorage.removeItem('isLoggedIn');
+			// Clear local storage just in case
+			localStorage.removeItem('isLoggedIn');
 
 			// Show Swal after a slight delay to ensure it appears on top or after basic init
 			setTimeout(() => {
@@ -76,14 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
 					text: 'Your session has timed out. Please log in again to continue.',
 					icon: 'warning',
 					confirmButtonText: 'Log In',
-					confirmButtonColor: '#7066e0',
+					confirmButtonColor: '#A67B5B',
 					allowOutsideClick: false,
-					backdrop: `
-						rgba(0,0,123,0.4)
-						url("images/nyan-cat.gif")
-						left top
-						no-repeat
-					` // Just kidding, standard backdrop
+					// specific backdrop removed to use system default
 				}).then((result) => {
 					// Clean URL
 					window.history.replaceState({}, document.title, window.location.pathname);
@@ -130,131 +119,36 @@ document.addEventListener('DOMContentLoaded', () => {
 	const passwordToggle = document.getElementById('passwordToggle');
 	const MAX_PASSWORD_LENGTH = 20;
 
-	// Store the actual password value separately - GLOBAL for login handler
+	// --- Password Toggle Logic (Standard) ---
+
+	// Remove complex global password storage
 	window.actualPassword = '';
-	let isPasswordVisible = false;
 
 	if (passwordInput && passwordToggle) {
-		// Handle keyboard input to properly capture typed characters
-		passwordInput.addEventListener('keydown', (e) => {
-			const cursorPos = passwordInput.selectionStart;
-			const selectionStart = passwordInput.selectionStart;
-			const selectionEnd = passwordInput.selectionEnd;
-			const hasSelection = selectionStart !== selectionEnd;
-
-			if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-				// Check if adding another character would exceed max length
-				if (window.actualPassword.length >= MAX_PASSWORD_LENGTH && !hasSelection) {
-					e.preventDefault();
-					return;
-				}
-				// Regular character being typed
-				e.preventDefault();
-				if (hasSelection) {
-					window.actualPassword = window.actualPassword.substring(0, selectionStart) + e.key + window.actualPassword.substring(selectionEnd);
-				} else {
-					window.actualPassword = window.actualPassword.substring(0, cursorPos) + e.key + window.actualPassword.substring(cursorPos);
-				}
-				// Enforce max length
-				if (window.actualPassword.length > MAX_PASSWORD_LENGTH) {
-					window.actualPassword = window.actualPassword.substring(0, MAX_PASSWORD_LENGTH);
-				}
-				updatePasswordDisplay(Math.min(selectionStart + 1, MAX_PASSWORD_LENGTH));
-			} else if (e.key === 'Backspace') {
-				e.preventDefault();
-				if (hasSelection) {
-					window.actualPassword = window.actualPassword.substring(0, selectionStart) + window.actualPassword.substring(selectionEnd);
-					updatePasswordDisplay(selectionStart);
-				} else if (cursorPos > 0) {
-					window.actualPassword = window.actualPassword.substring(0, cursorPos - 1) + window.actualPassword.substring(cursorPos);
-					updatePasswordDisplay(cursorPos - 1);
-				}
-			} else if (e.key === 'Delete') {
-				e.preventDefault();
-				if (hasSelection) {
-					window.actualPassword = window.actualPassword.substring(0, selectionStart) + window.actualPassword.substring(selectionEnd);
-					updatePasswordDisplay(selectionStart);
-				} else {
-					window.actualPassword = window.actualPassword.substring(0, cursorPos) + window.actualPassword.substring(cursorPos + 1);
-					updatePasswordDisplay(cursorPos);
-				}
-			} else if (e.key === 'ArrowLeft') {
-				// Let default behavior handle arrow keys
-				return;
-			} else if (e.key === 'ArrowRight') {
-				// Let default behavior handle arrow keys
-				return;
-			}
-		});
-
-		// Handle paste event to add pasted text
-		passwordInput.addEventListener('paste', (e) => {
-			e.preventDefault();
-			const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-			const cursorPos = passwordInput.selectionStart;
-			const selectionStart = passwordInput.selectionStart;
-			const selectionEnd = passwordInput.selectionEnd;
-
-			if (selectionStart !== selectionEnd) {
-				window.actualPassword = window.actualPassword.substring(0, selectionStart) + pastedText + window.actualPassword.substring(selectionEnd);
-			} else {
-				window.actualPassword = window.actualPassword.substring(0, cursorPos) + pastedText + window.actualPassword.substring(cursorPos);
-			}
-
-			// Enforce max length
-			if (window.actualPassword.length > MAX_PASSWORD_LENGTH) {
-				window.actualPassword = window.actualPassword.substring(0, MAX_PASSWORD_LENGTH);
-			}
-
-			const newPos = Math.min(selectionStart + pastedText.length, MAX_PASSWORD_LENGTH);
-			updatePasswordDisplay(newPos);
-		});
-
-		// Function to update the password display and cursor position
-		function updatePasswordDisplay(newCursorPos) {
-			if (isPasswordVisible) {
-				passwordInput.value = window.actualPassword;
-			} else {
-				passwordInput.value = '•'.repeat(window.actualPassword.length);
-			}
-
-			// Restore cursor position
-			setTimeout(() => {
-				passwordInput.setSelectionRange(newCursorPos, newCursorPos);
-			}, 0);
-		}
-
-		// Toggle password visibility
+		// Toggle password visibility by changing input type
 		passwordToggle.addEventListener('click', (e) => {
 			e.preventDefault();
-			isPasswordVisible = !isPasswordVisible;
 
-			const cursorPos = passwordInput.selectionStart;
+			const isPassword = passwordInput.getAttribute('type') === 'password';
+			const newType = isPassword ? 'text' : 'password';
+			passwordInput.setAttribute('type', newType);
+
 			const eyeHidden = passwordToggle.querySelector('.eye-hidden');
 			const eyeVisible = passwordToggle.querySelector('.eye-visible');
 
-			if (isPasswordVisible) {
-				// Show password
-				passwordInput.value = window.actualPassword;
-				passwordToggle.setAttribute('aria-label', 'Hide password');
-				passwordToggle.classList.add('visible');
-				// Toggle icons
-				eyeHidden.style.display = 'none';
-				eyeVisible.style.display = 'block';
-			} else {
-				// Hide password
-				passwordInput.value = '•'.repeat(window.actualPassword.length);
+			if (!isPassword) {
+				// Switching back to password (Hide)
 				passwordToggle.setAttribute('aria-label', 'Show password');
 				passwordToggle.classList.remove('visible');
-				// Toggle icons
 				eyeHidden.style.display = 'block';
 				eyeVisible.style.display = 'none';
+			} else {
+				// Switching to text (Show)
+				passwordToggle.setAttribute('aria-label', 'Hide password');
+				passwordToggle.classList.add('visible');
+				eyeHidden.style.display = 'none';
+				eyeVisible.style.display = 'block';
 			}
-
-			// Restore cursor position
-			setTimeout(() => {
-				passwordInput.setSelectionRange(cursorPos, cursorPos);
-			}, 0);
 		});
 
 		// Prevent default form submission on toggle button click
@@ -264,64 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				passwordToggle.click();
 			}
 		});
-
-		// Handle form submission - use the actual password
-		const loginForm = document.getElementById('loginForm');
-		if (loginForm) {
-			loginForm.addEventListener('submit', (e) => {
-				// Make sure the actual password is sent
-			});
-		}
 	}
-
-	// --- LOCKOUT UI CHECKER ---
-	// Checks periodically if the lockout is active and disables inputs if so.
-	function checkLockout() {
-		const usernameField = document.getElementById('username');
-		const passwordField = document.getElementById('password');
-		const submitBtn = document.querySelector('button[type="submit"]');
-
-		const lockoutEnd = parseInt(localStorage.getItem('login_lockout_end') || '0', 10);
-		const now = Date.now();
-
-		if (lockoutEnd > now) {
-			// Lockout Active
-			if (usernameField) usernameField.disabled = true;
-			if (passwordField) passwordField.disabled = true;
-			if (submitBtn) {
-				submitBtn.disabled = true;
-				// Optional: show countdown in button or just 'Locked'
-				const remainingMs = lockoutEnd - now;
-				const remainingSec = Math.ceil(remainingMs / 1000);
-				const minutes = Math.floor(remainingSec / 60);
-				const seconds = remainingSec % 60;
-				submitBtn.innerText = `Locked (${minutes}m ${seconds}s)`;
-			}
-
-			// Schedule next check/update
-			requestAnimationFrame(checkLockout);
-		} else {
-			// specific check to see if we just came out of lockout to restore UI once
-			if (usernameField && usernameField.disabled) {
-				usernameField.disabled = false;
-				usernameField.placeholder = "username";
-			}
-			if (passwordField && passwordField.disabled) {
-				passwordField.disabled = false;
-				passwordField.placeholder = "••••••••";
-			}
-			if (submitBtn && submitBtn.disabled) {
-				submitBtn.disabled = false;
-				submitBtn.innerText = 'Sign in';
-			}
-		}
-	}
-
-	// Start the checker loops
-	checkLockout();
-
-	// Listen for external trigger
-	window.addEventListener('lockoutStart', checkLockout);
 
 });
 
@@ -376,128 +213,57 @@ window.onclick = function (event) {
 	}
 }
 
-// Login Handler Function with Firebase Authentication
+// Login Handler Function
 async function handleLogin(event) {
 	event.preventDefault();
 
-	const now = Date.now();
+	const email = document.getElementById('username').value.trim();
 
-	// --- 1. RESET Logic (1 hour idle) ---
-	const lastFailTime = parseInt(localStorage.getItem('login_last_fail_time') || '0', 10);
-	const ONE_HOUR_MS = 60 * 60 * 1000;
-
-	if (lastFailTime > 0 && (now - lastFailTime > ONE_HOUR_MS)) {
-		// Reset counters if idle for more than 1 hour
-		localStorage.removeItem('login_failed_attempts');
-		localStorage.removeItem('login_penalty_level');
-		localStorage.removeItem('login_lockout_end');
-		localStorage.removeItem('login_last_fail_time');
-	}
-
-	// --- 2. CHECK LOCKOUT ---
-	const lockoutEnd = parseInt(localStorage.getItem('login_lockout_end') || '0', 10);
-	if (lockoutEnd > now) {
-		const remainingMs = lockoutEnd - now;
-		const remainingSec = Math.ceil(remainingMs / 1000);
-		const minutes = Math.floor(remainingSec / 60);
-		const seconds = remainingSec % 60;
-
-		Swal.fire({
-			title: 'Locked Out',
-			text: `Too many failed attempts. Please try again in ${minutes}m ${seconds}s.`,
-			icon: 'error',
-			confirmButtonColor: '#d33'
-		});
-		return;
-	} else if (lockoutEnd !== 0) {
-		// Clean up expired lockout timestamp but keep penalty level (unless 1hr passed)
-		localStorage.removeItem('login_lockout_end');
-	}
-
-	const username = document.getElementById('username').value.trim();
 	// Get the actual password from the global variable (used for masking)
 	// or fallback to the input value
 	const password = (window.actualPassword || document.getElementById('password').value).trim();
 
 	// Check for empty fields
-	if (!username || !password) {
+	if (!email || !password) {
 		Swal.fire({
 			title: 'Input Required',
-			text: 'Please enter both username and password.',
+			text: 'Please enter both email and password.',
 			icon: 'warning',
 			confirmButtonColor: '#7066e0'
 		});
 		return;
 	}
 
-	// Show loading state
-	Swal.fire({
-		title: 'Authenticating...',
-		text: 'Please wait',
-		allowOutsideClick: false,
-		didOpen: () => {
-			Swal.showLoading();
-		}
-	});
-
 	try {
-		// --- 3. AUTHENTICATE WITH FIREBASE ---
-		// Query Firestore for user with matching username
-		const userQuery = await FirebaseDB.queryDocuments(
-			FirebaseDB.COLLECTIONS.USERS,
-			[['username', '==', username]]
-		);
+		// Show loading
+		Swal.fire({
+			title: 'Signing in...',
+			text: 'Verifying credentials',
+			allowOutsideClick: false,
+			didOpen: () => {
+				Swal.showLoading();
+			}
+		});
 
-		// Check if user exists
-		if (userQuery.length === 0) {
-			throw new Error('INVALID_CREDENTIALS');
-		}
+		// 1. Authenticate with Firebase Auth
+		const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
+		const user = userCredential.user;
 
-		const userDoc = userQuery[0];
+		// 2. Get User Info directly from Auth Object (since users are not in Firestore)
+		// Use email prefix as username if displayName is not set
+		const displayUsername = user.displayName || user.email.split('@')[0];
 
-		// Check if user is active
-		if (userDoc.active === false) {
-			throw new Error('ACCOUNT_DISABLED');
-		}
+		// Store login state
+		localStorage.setItem('isLoggedIn', 'true');
+		localStorage.setItem('username', displayUsername);
 
-		// Verify password (in production, use hashed passwords!)
-		// For now, we'll check against a password field in the user document
-		if (userDoc.password !== password) {
-			throw new Error('INVALID_CREDENTIALS');
-		}
-
-		// --- SUCCESS: Clear all penalties ---
-		localStorage.removeItem('login_failed_attempts');
-		localStorage.removeItem('login_penalty_level');
-		localStorage.removeItem('login_lockout_end');
-		localStorage.removeItem('login_last_fail_time');
-
-		// Store login state in sessionStorage
-		sessionStorage.setItem('isLoggedIn', 'true');
-		sessionStorage.setItem('username', userDoc.username);
-		sessionStorage.setItem('userId', userDoc.id);
-		sessionStorage.setItem('userRole', userDoc.role || 'staff');
-		sessionStorage.setItem('userFullName', userDoc.fullName || userDoc.username);
-
-		// Log successful login to Firebase
-		try {
-			await FirebaseDB.addDocument('loginHistory', {
-				userId: userDoc.id,
-				username: userDoc.username,
-				role: userDoc.role,
-				loginTime: new Date().toISOString(),
-				success: true,
-				ipAddress: 'N/A' // Can be enhanced with IP detection
-			});
-		} catch (logError) {
-			console.error('Failed to log login history:', logError);
-			// Don't block login if logging fails
-		}
+		// Optional: If you have a specific admin email, you can hardcode a role check here
+		// if (user.email === 'admin@brand.com') localStorage.setItem('role', 'admin');
 
 		// Show success alert and redirect
 		Swal.fire({
 			title: 'Login Successful!',
-			text: `Welcome back, ${userDoc.fullName || userDoc.username}!`,
+			text: `Welcome back, ${displayUsername}!`,
 			icon: 'success',
 			showConfirmButton: false,
 			timer: 1500,
@@ -510,88 +276,49 @@ async function handleLogin(event) {
 		});
 
 	} catch (error) {
-		console.error('Login error:', error);
+		console.error("Login Error:", error);
 
-		// --- FAILURE: Handle Penalties ---
-		let failedAttempts = parseInt(localStorage.getItem('login_failed_attempts') || '0', 10);
-		failedAttempts++;
-		localStorage.setItem('login_failed_attempts', failedAttempts);
-		localStorage.setItem('login_last_fail_time', now);
+		let errorMessage = "Unable to sign in. Please check your information.";
 
-		// Log failed login attempt to Firebase
-		try {
-			await FirebaseDB.addDocument('loginHistory', {
-				username: username,
-				loginTime: new Date().toISOString(),
-				success: false,
-				attempts: failedAttempts,
-				reason: error.message
-			});
-		} catch (logError) {
-			console.error('Failed to log failed attempt:', logError);
-		}
-
-		// Determine error message
-		let errorTitle = 'Login Failed';
-		let errorMessage = `Invalid username or password. You have ${3 - failedAttempts} attempt(s) remaining.`;
-
-		if (error.message === 'ACCOUNT_DISABLED') {
-			errorTitle = 'Account Disabled';
-			errorMessage = 'Your account has been disabled. Please contact an administrator.';
-		}
-
-		// Check for Lockout Trigger (every 3 attempts)
-		if (failedAttempts >= 3) {
-			// Get current penalty level (0 = 1st lock, 1 = 2nd lock...)
-			let penaltyLevel = parseInt(localStorage.getItem('login_penalty_level') || '0', 10);
-
-			// Formula: 1 min, 3 mins, 5 mins... (1 + level*2)
-			const lockoutDurationMinutes = 1 + (penaltyLevel * 2);
-			const lockoutDurationMs = lockoutDurationMinutes * 60 * 1000;
-
-			// Set lockout end time
-			localStorage.setItem('login_lockout_end', now + lockoutDurationMs);
-
-			// Increase penalty level for next time
-			localStorage.setItem('login_penalty_level', penaltyLevel + 1);
-
-			// Reset failed attempts for the next batch
-			localStorage.setItem('login_failed_attempts', '0');
-
-			// Trigger visual update
-			const usernameField = document.getElementById('username');
-			const passwordField = document.getElementById('password');
-			const submitBtn = document.querySelector('button[type="submit"]');
-			if (usernameField) usernameField.disabled = true;
-			if (passwordField) passwordField.disabled = true;
-			if (submitBtn) submitBtn.disabled = true;
-
-			// Dispatch event to kickstart the rAF loop in checkLockout immediately
-			window.dispatchEvent(new Event('lockoutStart'));
-
-			Swal.fire({
-				title: 'System Locked',
-				text: `Maximum attempts exceeded. You are locked out for ${lockoutDurationMinutes} minute(s).`,
-				icon: 'error',
-				confirmButtonColor: '#d33',
-				allowOutsideClick: false
-			});
-		} else {
-			// Show error alert
-			Swal.fire({
-				title: errorTitle,
-				text: errorMessage,
-				icon: 'error',
-				confirmButtonColor: '#7066e0',
-				timer: 3000,
-				timerProgressBar: true,
-				didClose: () => {
-					// Clear password field after error
-					document.getElementById('password').value = '';
-					window.actualPassword = '';
-					document.getElementById('username').focus();
+		// Map specific Firebase error codes to formal user-friendly messages
+		switch (error.code) {
+			case 'auth/user-not-found':
+			case 'auth/wrong-password':
+			case 'auth/invalid-credential':
+				errorMessage = "Invalid email or password.";
+				break;
+			case 'auth/invalid-email':
+				errorMessage = "The email address is badly formatted.";
+				break;
+			case 'auth/too-many-requests':
+				errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.";
+				break;
+			case 'auth/network-request-failed':
+				errorMessage = "Network error. Please check your internet connection.";
+				break;
+			default:
+				// If it's a custom error thrown by our code
+				if (error.message && !error.message.startsWith('Firebase:')) {
+					errorMessage = error.message;
 				}
-			});
+			// Otherwise keep the generic "Unable to sign in..." message to avoid showing raw technical errors
 		}
+
+		// Show error alert using SweetAlert2
+		Swal.fire({
+			title: 'Login Failed',
+			text: errorMessage,
+			icon: 'error',
+			confirmButtonColor: '#7066e0',
+			timer: 3000,
+			timerProgressBar: true,
+			didClose: () => {
+				// Clear password field after error
+				document.getElementById('password').value = '';
+				window.actualPassword = '';
+				// Don't clear email to let them retry
+				// document.getElementById('username').focus();
+			}
+		});
 	}
 }

@@ -1,5 +1,10 @@
-/* Landscape Restriction for Phones */
-@media screen and (max-height: 600px) and (orientation: landscape) {
+/* Landscape Restriction for Mobile Phones ONLY 
+   - max-height: 500px catches most phones in landscape
+   - max-width: 932px catches standard phone widths (iPhone 14 Pro Max is ~932px wide in landscape)
+   - hover: none ensures we only target touch devices, excluding desktops even if zoomed
+   - pointer: coarse ensures we target devices where accuracy is low (fingers), again excluding mouse users
+*/
+@media screen and (max-height: 500px) and (max-width: 950px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
     html::after {
         content: "Please rotate your device to portrait mode";
         position: fixed;

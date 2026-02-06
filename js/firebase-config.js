@@ -1,4 +1,3 @@
-// Firebase Configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
     apiKey: "AIzaSyBWCGEpoqeUVAkkgBRm8Ln46P9arp_jR6k",
@@ -11,19 +10,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-
-// Initialize Firebase services
-const db = firebase.firestore();
-const auth = firebase.auth();
-const storage = firebase.storage();
-const analytics = firebase.analytics();
-
-// Export for use in other files
-window.firebaseApp = firebase;
-window.db = db;
-window.auth = auth;
-window.storage = storage;
-window.analytics = analytics;
-
-console.log('Firebase initialized successfully');
+if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    // Initialize services
+    window.auth = firebase.auth();
+    window.db = firebase.firestore();
+    console.log("Firebase initialized");
+} else {
+    console.error("Firebase SDK not found!");
+}

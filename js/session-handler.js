@@ -7,37 +7,45 @@
 
 (function () {
     // --- 1. Session Verification Logic ---
-    const isLoginPage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/');
+    const path = window.location.pathname;
+    const isLoginPage = path.endsWith('index.html') || path.endsWith('/') || path.endsWith('Work/') || path.endsWith('WORK/');
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-    function checkSession() {
-        // Re-read storage every time for strictness (in case cleared by another tab or Back button logic)
-        const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    // Anti-flicker: Hide body immediately until verified
+    const style = document.createElement('style');
+    style.id = 'auth-protection-style';
+    style.innerHTML = 'body { visibility: hidden !important; opacity: 0 !important; }';
+    document.head.appendChild(style);
 
-        if (!isLoginPage) {
-            // We are on a protected page
-            if (!isLoggedIn) {
-                // User is not logged in, hide content immediately to prevent flash
-                document.documentElement.style.display = 'none';
-                // Redirect to login with expiration flag
-                console.warn('Session invalid. Redirecting to login.');
-                window.location.href = 'index.html?session_expired=true';
-            } else {
-                // Make sure content is visible if valid
-                document.documentElement.style.display = '';
-            }
-        }
+    function showBody() {
+        const styleEl = document.getElementById('auth-protection-style');
+        if (styleEl) styleEl.remove();
+        document.body.style.visibility = 'visible';
+        document.body.style.opacity = '1';
     }
 
-    // Run on initial load
-    checkSession();
-
-    // --- STRICT SESSION LOCK: Handle Back/Forward Cache (bfcache) ---
-    // Browsers often cache the page state (including DOM) when navigating away.
-    // The 'pageshow' event fires when a session history entry is being traversed to.
-    window.addEventListener('pageshow', function (event) {
-        // If the page was persisted (loaded from bfcache) or just navigated to normally
-        checkSession();
-    });
+    if (!isLoginPage) {
+        // We are on a protected page
+        if (!isLoggedIn) {
+            // User is not logged in, redirect to login with expiration flag
+            window.location.replace('index.html?session_expired=true');
+        } else {
+            // Authorized
+            window.addEventListener('DOMContentLoaded', showBody);
+            // Fallback in case DOMContentLoaded already fired or takes too long
+            setTimeout(showBody, 100);
+        }
+    } else {
+        // We are on the login page
+        if (isLoggedIn) {
+            // Already logged in, redirect to home
+            window.location.replace('home.html');
+        } else {
+            // Not logged in, show login page
+            window.addEventListener('DOMContentLoaded', showBody);
+            setTimeout(showBody, 100);
+        }
+    }
 
     // --- 2. Footer Injection / Global UI ---
 

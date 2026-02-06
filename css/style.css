@@ -183,6 +183,20 @@ main {
 	padding: 24px;
 }
 
+/* Desktop Stability: Prevent crushing when zoomed in */
+@media (hover: hover) and (pointer: fine) {
+	main {
+		min-width: 1000px;
+		/* Ensure sufficient width for login card + beans */
+		overflow-x: auto;
+	}
+
+	.login-card {
+		min-width: 800px;
+		/* Lock card size */
+	}
+}
+
 /* Legal Text Links under Button */
 .legal-text {
 	margin-top: 15px;
@@ -432,6 +446,7 @@ main {
 }
 
 input[type="text"],
+input[type="email"],
 input[type="password"] {
 	padding: 12px 14px;
 	border: 1px solid var(--input-border-color);
@@ -613,6 +628,7 @@ button.primary:hover {
 	}
 
 	input[type="text"],
+	input[type="email"],
 	input[type="password"] {
 		font-size: 15px;
 		padding: 14px;

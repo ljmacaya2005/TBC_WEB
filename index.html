@@ -9,8 +9,18 @@
 	<link rel="stylesheet" href="css/style.css">
 	<link rel="stylesheet" href="css/version-island.css">
 	<link rel="stylesheet" href="css/landscape-restriction.css">
+
+	<!-- Firebase SDKs (Compat version for vanilla JS) -->
+	<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+	<!-- Firebase Config and Initialization -->
+	<script src="js/firebase-config.js"></script>
+
+	<script src="js/swal2.js"></script>
 	<script src="js/swal2.js"></script>
 	<script src="js/session-handler.js"></script>
+	<script src="js/zoom-lock.js"></script>
 </head>
 
 <body>
@@ -117,13 +127,14 @@
 						<p class="desc">Welcome back — sign in to continue to your dashboard.</p>
 						<form id="loginForm" aria-label="Sign in form" onsubmit="handleLogin(event)">
 							<div class="form-row">
-								<label for="username">Username</label>
-								<input id="username" name="username" type="text" placeholder="username" maxlength="20">
+								<label for="username">Email</label>
+								<input id="username" name="username" type="email" placeholder="name@example.com"
+									maxlength="50">
 							</div>
 							<div class="form-row">
 								<label for="password">Password</label>
 								<div class="password-wrapper">
-									<input id="password" name="password" type="text" placeholder="••••••••"
+									<input id="password" name="password" type="password" placeholder="••••••••"
 										maxlength="20" autocomplete="off">
 									<button type="button" class="password-toggle" id="passwordToggle"
 										aria-label="Show password">
@@ -185,9 +196,7 @@
 			<line x1="12" y1="16" x2="12" y2="12"></line>
 			<line x1="12" y1="8" x2="12.01" y2="8"></line>
 		</svg>
-		<span class="version-text">System v4.4
-
-		</span>
+		<span class="version-text">System v4.8</span>
 	</div>
 
 	<!-- Theme Switcher -->
@@ -225,17 +234,6 @@
 			</li>
 		</ul>
 	</div>
-
-	<!-- Firebase SDK -->
-	<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
-
-	<!-- Firebase Configuration -->
-	<script src="js/firebase-config.js"></script>
-	<script src="js/firebase-db.js"></script>
 
 	<script src="js/main.js" defer></script>
 	<script src="js/color-modes.js" defer></script>

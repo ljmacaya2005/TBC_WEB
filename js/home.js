@@ -1,12 +1,7 @@
 (() => {
   'use strict'
 
-  // Check if user is logged in
-  if (!sessionStorage.getItem('isLoggedIn')) {
-    // Redirect to login if not authenticated
-    sessionStorage.setItem('showAuthAlert', 'true');
-    window.location.href = 'index.html';
-  }
+  // Session check is handled by session-handler.js
 
   function toggleFullScreen() {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen();
@@ -138,9 +133,9 @@
         cancelButtonText: 'Cancel'
       }).then((result) => {
         if (result.isConfirmed) {
-          // Clear login state from sessionStorage and theme from localStorage
-          sessionStorage.removeItem('isLoggedIn');
-          sessionStorage.removeItem('username');
+          // Clear login state and theme from localStorage
+          localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('username');
           localStorage.removeItem('theme');
 
           // Show success message and redirect
@@ -186,7 +181,7 @@
     });
 
     // Set logged in username across UI
-    const username = sessionStorage.getItem('username');
+    const username = localStorage.getItem('username');
     if (username) {
       document.querySelectorAll('.user-name').forEach(el => el.textContent = username);
       document.querySelectorAll('.user-name-display').forEach(el => el.textContent = username);

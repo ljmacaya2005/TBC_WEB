@@ -43,7 +43,7 @@
       element.classList.remove('active')
     })
     activeThemeItem?.classList.add('active');
-
+    
     // Update toggle button icon
     if (themeToggleButton) {
       themeToggleButton.innerHTML = ICONS[theme] || ICONS.auto;
@@ -125,7 +125,7 @@
     document.addEventListener('click', (event) => {
       const isClickInsideSidebar = sidebar?.contains(event.target);
       const isClickOnToggle = mobileMenuToggle?.contains(event.target);
-
+      
       if (!isClickInsideSidebar && !isClickOnToggle) {
         sidebar?.classList.remove('active');
       }
@@ -146,10 +146,10 @@
       }).then((result) => {
         if (result.isConfirmed) {
           // Clear login state and theme from localStorage
-          sessionStorage.removeItem('isLoggedIn');
-          sessionStorage.removeItem('username');
+          localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('username');
           localStorage.removeItem('theme');
-
+          
           // Show success message and redirect
           Swal.fire({
             title: 'Signed Out',

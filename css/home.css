@@ -607,6 +607,20 @@ body {
 	z-index: 1;
 }
 
+/* 
+   STABILITY FIX: Enforce min-width on desktop to prevent layout crowding when zooming in.
+   When zooming in, pixels get "larger", so the effective viewport width in pixels decreases.
+   By setting min-width, we force a scrollbar instead of letting elements crush together.
+*/
+@media (hover: hover) and (pointer: fine) {
+	.home-wrapper {
+		min-width: 1024px;
+		/* Force minimum desktop width */
+		overflow-x: auto;
+		/* Allow scrolling */
+	}
+}
+
 /* Sidebar */
 .sidebar {
 	width: auto;
