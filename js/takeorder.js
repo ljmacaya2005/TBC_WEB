@@ -4,29 +4,29 @@
 
 // --- Data ---
 const products = [
-    { id: 'c1', name: 'Espresso', price: 110.00, category: 'coffee', image: 'images/CoffeeBean.png' },
-    { id: 'c2', name: 'Americano', price: 120.00, category: 'coffee', image: 'images/CoffeeBean.png' },
-    { id: 'c3', name: 'Cappuccino', price: 140.00, category: 'coffee', image: 'images/CoffeeBean.png' },
-    { id: 'c4', name: 'Latte', price: 150.00, category: 'coffee', image: 'images/CoffeeBean.png' },
-    { id: 'c5', name: 'Mocha', price: 160.00, category: 'coffee', image: 'images/CoffeeBean.png' },
-    { id: 'c6', name: 'Caramel Macchiato', price: 170.00, category: 'coffee', image: 'images/CoffeeBean.png' },
-    { id: 'c7', name: 'Cold Brew', price: 145.00, category: 'coffee', image: 'images/CoffeeBean.png' },
+    { id: 'c1', name: 'Espresso', price: 110.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
+    { id: 'c2', name: 'Americano', price: 120.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
+    { id: 'c3', name: 'Cappuccino', price: 140.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
+    { id: 'c4', name: 'Latte', price: 150.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
+    { id: 'c5', name: 'Mocha', price: 160.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
+    { id: 'c6', name: 'Caramel Macchiato', price: 170.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
+    { id: 'c7', name: 'Cold Brew', price: 145.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
 
-    { id: 'nc1', name: 'Hot Chocolate', price: 130.00, category: 'non-coffee', image: 'images/CoffeeBean.png' },
-    { id: 'nc2', name: 'Matcha Latte', price: 160.00, category: 'non-coffee', image: 'images/CoffeeBean.png' },
-    { id: 'nc3', name: 'Chai Tea', price: 135.00, category: 'non-coffee', image: 'images/CoffeeBean.png' },
-    { id: 'nc4', name: 'Iced Tea', price: 100.00, category: 'non-coffee', image: 'images/CoffeeBean.png' },
+    { id: 'nc1', name: 'Hot Chocolate', price: 130.00, category: 'non-coffee', image: 'assets/CoffeeBean.png' },
+    { id: 'nc2', name: 'Matcha Latte', price: 160.00, category: 'non-coffee', image: 'assets/CoffeeBean.png' },
+    { id: 'nc3', name: 'Chai Tea', price: 135.00, category: 'non-coffee', image: 'assets/CoffeeBean.png' },
+    { id: 'nc4', name: 'Iced Tea', price: 100.00, category: 'non-coffee', image: 'assets/CoffeeBean.png' },
 
-    { id: 'p1', name: 'Croissant', price: 95.00, category: 'pastries', image: 'images/CoffeeBean.png' },
-    { id: 'p2', name: 'Choc Croissant', price: 115.00, category: 'pastries', image: 'images/CoffeeBean.png' },
-    { id: 'p3', name: 'Blueberry Muffin', price: 105.00, category: 'pastries', image: 'images/CoffeeBean.png' },
-    { id: 'p4', name: 'Bagel & Cream Cheese', price: 110.00, category: 'pastries', image: 'images/CoffeeBean.png' },
+    { id: 'p1', name: 'Croissant', price: 95.00, category: 'pastries', image: 'assets/CoffeeBean.png' },
+    { id: 'p2', name: 'Choc Croissant', price: 115.00, category: 'pastries', image: 'assets/CoffeeBean.png' },
+    { id: 'p3', name: 'Blueberry Muffin', price: 105.00, category: 'pastries', image: 'assets/CoffeeBean.png' },
+    { id: 'p4', name: 'Bagel & Cream Cheese', price: 110.00, category: 'pastries', image: 'assets/CoffeeBean.png' },
 
-    { id: 'b1', name: 'Breakfast Sandwich', price: 220.00, category: 'breakfast', image: 'images/CoffeeBean.png' },
-    { id: 'b2', name: 'Oatmeal', price: 120.00, category: 'breakfast', image: 'images/CoffeeBean.png' },
+    { id: 'b1', name: 'Breakfast Sandwich', price: 220.00, category: 'breakfast', image: 'assets/CoffeeBean.png' },
+    { id: 'b2', name: 'Oatmeal', price: 120.00, category: 'breakfast', image: 'assets/CoffeeBean.png' },
 
-    { id: 'm1', name: 'Brew Cave Mug', price: 450.00, category: 'apparel', image: 'images/CoffeeBean.png' },
-    { id: 'm2', name: 'Coffee Beans (1lb)', price: 650.00, category: 'apparel', image: 'images/CoffeeBean.png' },
+    { id: 'm1', name: 'Brew Cave Mug', price: 450.00, category: 'apparel', image: 'assets/CoffeeBean.png' },
+    { id: 'm2', name: 'Coffee Beans (1lb)', price: 650.00, category: 'apparel', image: 'assets/CoffeeBean.png' },
 ];
 
 let cart = [];

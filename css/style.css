@@ -27,7 +27,7 @@
 	--modal-color1: #ffffff;
 	--modal-color2: #ffffff;
 	--splashlogocolor: #ffffff;
-	--splash-overlay: url('../images/milk-overlay.png');
+	--splash-overlay: url('../assets/milk-overlay.png');
 	--splash-liquid-color: #ffffff;
 	--splash-text-faint: rgba(255, 255, 255, 0.1);
 	--glass-btn-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
@@ -61,7 +61,7 @@
 	--modal-color1: #4E342E;
 	--modal-color2: #000;
 	--splashlogocolor: #5f4227;
-	--splash-overlay: url('../images/coffee-overlay.png');
+	--splash-overlay: url('../assets/coffee-overlay.png');
 	--splash-liquid-color: #6f4e37;
 	--splash-text-faint: rgba(95, 66, 39, 0.1);
 	--glass-btn-bg: linear-gradient(135deg, rgba(33, 37, 41, 0.7), rgba(33, 37, 41, 0.5));
@@ -731,7 +731,7 @@ button.primary:hover {
 	height: 120px;
 }
 
-/* All bean images and fallback svgs use the same opacity for visual consistency */
+/* All bean assets and fallback svgs use the same opacity for visual consistency */
 .bean img,
 .bean .bean-fallback {
 	opacity: 1;

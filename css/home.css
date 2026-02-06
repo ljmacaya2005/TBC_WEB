@@ -1141,7 +1141,7 @@ tbody tr:nth-child(20) {
 	height: 120px;
 }
 
-/* All bean images and fallback svgs use the same opacity for visual consistency */
+/* All bean assets and fallback svgs use the same opacity for visual consistency */
 .bean img,
 .bean .bean-fallback {
 	opacity: 1;

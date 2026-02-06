@@ -27,9 +27,9 @@
     const brandIcon = document.getElementById('brandIcon');
     if (brandIcon) {
       if (theme === 'dark') {
-        brandIcon.src = 'images/logo-white.png';
+        brandIcon.src = 'assets/logo-white.png';
       } else {
-        brandIcon.src = 'images/logo-black.png';
+        brandIcon.src = 'assets/logo-black.png';
       }
     }
   }
