@@ -54,28 +54,58 @@ const Toast = Swal.mixin({
     }
 });
 
+const categoryDropdown = document.getElementById('categoryDropdown');
+const categoryTrigger = document.getElementById('categoryTrigger');
+const categoryMenu = document.getElementById('categoryMenu');
+const selectedCategoryName = document.getElementById('selectedCategoryName');
+const categoryOptions = document.querySelectorAll('.dropdown-option-premium');
+
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     renderProducts();
     renderCart();
 
-    // Category Filtering
-    categoryButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Update active state
-            categoryButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+    // Custom Category Dropdown Logic
+    if (categoryTrigger) {
+        categoryTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            categoryDropdown.classList.toggle('active');
+        });
+    }
 
-            currentCategory = btn.dataset.category;
+    // Handle Option Selection
+    categoryOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const value = option.dataset.value;
+            const text = option.textContent.trim();
+
+            // Update state
+            currentCategory = value;
+            selectedCategoryName.textContent = text;
+
+            // Update UI classes
+            categoryOptions.forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+
+            // Close menu and filter
+            categoryDropdown.classList.remove('active');
             renderProducts();
         });
     });
 
-    // Search Filtering
-    searchInput.addEventListener('input', (e) => {
-        searchQuery = e.target.value.toLowerCase();
-        renderProducts();
+    // Close on outside click
+    document.addEventListener('click', () => {
+        if (categoryDropdown) categoryDropdown.classList.remove('active');
     });
+
+    // Search Filtering
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            renderProducts();
+        });
+    }
 });
 
 // --- Functions ---
@@ -114,7 +144,6 @@ function renderProducts() {
             </div>
             <div class="product-info">
                 <h3 class="product-title">${product.name}</h3>
-                <p class="product-description">${product.category}</p>
                 <div class="product-meta">
                     <span class="product-price">₱${product.price.toFixed(2)}</span>
                     <button class="add-btn-mini">
@@ -373,7 +402,7 @@ window.processPayment = () => {
 
     // Success
     if (typeof closePaymentModal === 'function') closePaymentModal();
-    
+
     Swal.fire({
         title: 'Payment Successful!',
         text: `Change: ₱${(amountTendered - total).toFixed(2)}`,

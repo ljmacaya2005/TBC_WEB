@@ -7,6 +7,7 @@
 	<title>The Brew Cave — Overview</title>
 	<link rel="icon" type="image/x-icon" href="assets/icon.png">
 	<link rel="stylesheet" href="css/home.css">
+	<link rel="stylesheet" href="css/dashboard.css">
 	<link rel="stylesheet" href="css/version-island.css">
 	<link rel="stylesheet" href="css/landscape-restriction.css">
 	<!-- Supabase SDK -->
@@ -259,44 +260,165 @@
 				</div>
 			</header>
 
-			<div class="home-container">
-				<div class="home-content">
-					<div class="stats-grid">
-						<div class="home-card" onclick="location.href='orderhistory.html'">
-							<h3 style="font-size: 1rem; opacity: 0.8;">Total Checkouts</h3>
-							<div class="stat-value">1,284</div>
+			<div class="dashboard-container">
+				<div class="dashboard-stats-grid">
+					<!-- Total Checkouts -->
+					<div class="dashboard-stat-card ripple-effect" onclick="location.href='orderhistory.html'">
+						<div class="stat-card-icon checkout-icon">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+								stroke-linejoin="round">
+								<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+								<path d="M3 6h18" />
+								<path d="M16 10a4 4 0 0 1-8 0" />
+							</svg>
 						</div>
-						<div class="home-card" onclick="location.href='vieworders.html'">
-							<h3 style="font-size: 1rem; opacity: 0.8;">Pending Orders</h3>
-							<div class="stat-value">12</div>
+						<div class="stat-card-info">
+							<span class="stat-card-label">Total Checkouts</span>
+							<div class="stat-card-value">1,284</div>
+							<span class="stat-card-trend trend-up">
+								<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+									fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+									stroke-linejoin="round">
+									<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+									<polyline points="16 7 22 7 22 13"></polyline>
+								</svg>
+								12% Since yesterday
+							</span>
 						</div>
-						<div class="home-card" onclick="location.href='orderhistory.html?filter=refunded'">
-							<h3 style="font-size: 1rem; opacity: 0.8;">Total Refunds</h3>
-							<div class="stat-value" style="color: #e74c3c;">₱1,500</div>
+					</div>
+
+					<!-- Pending Orders -->
+					<div class="dashboard-stat-card ripple-effect" onclick="location.href='vieworders.html'">
+						<div class="stat-card-icon pending-icon">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+								stroke-linejoin="round">
+								<path d="M12 2v4" />
+								<path d="m16.2 7.8 2.9-2.9" />
+								<path d="M18 12h4" />
+								<path d="m16.2 16.2 2.9 2.9" />
+								<path d="M12 18v4" />
+								<path d="m4.9 19.1 2.9-2.9" />
+								<path d="M2 12h4" />
+								<path d="m4.9 4.9 2.9 2.9" />
+							</svg>
 						</div>
-						<div class="home-card" onclick="location.href='stocks.html?filter=low'">
-							<h3 style="font-size: 1rem; opacity: 0.8;">Low Stock Warning</h3>
-							<div class="stat-value" style="color: #f1c40f;">3 Items</div>
+						<div class="stat-card-info">
+							<span class="stat-card-label">Pending Orders</span>
+							<div class="stat-card-value">12</div>
+							<span class="stat-card-trend">Active awaiting prep</span>
 						</div>
-						<div class="home-card"
-							onclick="if(window.playSwalAudio) window.playSwalAudio('info'); Swal.fire({title:'Statistics', text:'Analytics module is loading...', icon:'info', confirmButtonColor:'#A67B5B'})">
-							<h3 style="font-size: 1rem; opacity: 0.8;">Statistics</h3>
-							<p style="margin-top: 10px; font-size: 0.9rem;">View performance metrics</p>
+					</div>
+
+					<!-- Total Refunds -->
+					<div class="dashboard-stat-card ripple-effect"
+						onclick="location.href='orderhistory.html?filter=refunded'">
+						<div class="stat-card-icon refund-icon">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+								stroke-linejoin="round">
+								<path d="M3 2v6h6" />
+								<path d="M3 13a9 9 0 1 0 3-7.7L3 8" />
+							</svg>
 						</div>
-						<div class="home-card" onclick="document.getElementById('viewActionsBtn').click()">
-							<h3 style="font-size: 1rem; opacity: 0.8;">Login History</h3>
-							<p style="margin-top: 10px; font-size: 0.9rem;">Review recent sessions</p>
+						<div class="stat-card-info">
+							<span class="stat-card-label">Total Refunds</span>
+							<div class="stat-card-value danger-text">₱1,500</div>
+							<span class="stat-card-trend trend-down">
+								<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+									fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+									stroke-linejoin="round">
+									<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline>
+									<polyline points="16 17 22 17 22 11"></polyline>
+								</svg>
+								5% From last week
+							</span>
 						</div>
-						<div class="home-card" style="grid-column: 1 / -1;" onclick="location.href='vieworders.html'">
-							<h3 style="font-size: 1rem; opacity: 0.8;">Recent Orders</h3>
-							<div
-								style="display: flex; gap: 15px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;">
-								<span class="priority-badge"
-									style="background: rgba(166, 123, 91, 0.1); color: #A67B5B; padding: 5px 12px; border-radius: 10px; font-size: 0.85rem; border: 1px solid rgba(166, 123, 91, 0.2);">#ORD-1024</span>
-								<span class="priority-badge"
-									style="background: rgba(166, 123, 91, 0.1); color: #A67B5B; padding: 5px 12px; border-radius: 10px; font-size: 0.85rem; border: 1px solid rgba(166, 123, 91, 0.2);">#ORD-1023</span>
-								<span class="priority-badge"
-									style="background: rgba(166, 123, 91, 0.1); color: #A67B5B; padding: 5px 12px; border-radius: 10px; font-size: 0.85rem; border: 1px solid rgba(166, 123, 91, 0.2);">#ORD-1022</span>
+					</div>
+
+					<!-- Low Stock -->
+					<div class="dashboard-stat-card ripple-effect" onclick="location.href='stocks.html?filter=low'">
+						<div class="stat-card-icon warning-icon">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+								stroke-linejoin="round">
+								<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+								<line x1="12" y1="9" x2="12" y2="13" />
+								<line x1="12" y1="17" x2="12.01" y2="17" />
+							</svg>
+						</div>
+						<div class="stat-card-info">
+							<span class="stat-card-label">Low Stock items</span>
+							<div class="stat-card-value warning-text">3 Items</div>
+							<span class="stat-card-trend">Needs reorder soon</span>
+						</div>
+					</div>
+
+					<!-- Analytics -->
+					<div class="dashboard-stat-card interactive-card animated-border"
+						onclick="if(window.playSwalAudio) window.playSwalAudio('info'); Swal.fire({title:'Statistics', text:'Analytics module is loading...', icon:'info', confirmButtonColor:'#A67B5B'})">
+						<div class="stat-card-icon analytics-icon">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+								stroke-linejoin="round">
+								<line x1="18" y1="20" x2="18" y2="10" />
+								<line x1="12" y1="20" x2="12" y2="4" />
+								<line x1="6" y1="20" x2="6" y2="14" />
+							</svg>
+						</div>
+						<div class="stat-card-info">
+							<span class="stat-card-label">System Insights</span>
+							<div class="stat-card-value">Performance</div>
+							<p class="stat-card-desc">Deep dive into store metrics</p>
+						</div>
+					</div>
+
+					<!-- Sessions -->
+					<div class="dashboard-stat-card interactive-card"
+						onclick="document.getElementById('viewActionsBtn').click()">
+						<div class="stat-card-icon history-icon">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+								fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+								stroke-linejoin="round">
+								<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+								<path d="M3 3v5h5" />
+								<path d="M12 7v5l4 2" />
+							</svg>
+						</div>
+						<div class="stat-card-info">
+							<span class="stat-card-label">Active Sessions</span>
+							<div class="stat-card-value">Security</div>
+							<p class="stat-card-desc">Review recent login activities</p>
+						</div>
+					</div>
+
+					<!-- Recent Orders Table Preview -->
+					<div class="dashboard-stat-card full-width-card animated-entry"
+						onclick="location.href='vieworders.html'">
+						<div class="card-header-flex">
+							<h3>
+								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+									fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+									stroke-linejoin="round">
+									<rect width="20" height="14" x="2" y="5" rx="2" />
+									<line x1="2" y1="10" x2="22" y2="10" />
+								</svg>
+								Recent Transactions
+							</h3>
+						</div>
+						<div class="order-pills-container">
+							<div class="order-pill-premium">
+								<span class="order-id">#ORD-1024</span>
+								<span class="order-status completed">Completed</span>
+							</div>
+							<div class="order-pill-premium">
+								<span class="order-id">#ORD-1023</span>
+								<span class="order-status pending">Pending</span>
+							</div>
+							<div class="order-pill-premium">
+								<span class="order-id">#ORD-1022</span>
+								<span class="order-status preparing">Preparing</span>
 							</div>
 						</div>
 					</div>

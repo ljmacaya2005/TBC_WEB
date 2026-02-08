@@ -283,10 +283,21 @@ body {
 	color: inherit;
 	font-family: inherit;
 	border-radius: 50px;
+	/* Pill shape */
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
 	transition: all 0.3s ease;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+	overflow: hidden;
+}
+
+.user-avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	/* Circular */
+	object-fit: cover;
+	border: 1.5px solid rgba(255, 255, 255, 0.2);
 }
 
 .user-link:hover {
@@ -849,8 +860,17 @@ body {
 	padding: 6px 16px;
 	color: var(--sidebar-text);
 	text-decoration: none;
-	border-radius: 50px;
+	border-radius: 50px; /* Pill shape */
+	overflow: hidden;
 	transition: background-color 0.2s ease, color 0.3s ease;
+}
+
+.user-avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%; /* Circular */
+	object-fit: cover;
+	border: 1.5px solid rgba(255, 255, 255, 0.2);
 }
 
 .user-link:hover {
@@ -2216,9 +2236,15 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 	font-size: 0.7rem;
 	letter-spacing: 1px;
 	padding: 5px 12px;
-	border-radius: 50px;
-	font-weight: 800;
-	text-transform: uppercase;
+	border-radius: 50px; /* Pill shape */
+}
+
+.user-avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%; /* Circular */
+	object-fit: cover;
+	border: 1.5px solid rgba(255, 255, 255, 0.2);
 }
 
 .warning-badge {
@@ -2347,7 +2373,7 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 .search-input {
 	width: 100%;
 	padding: 12px 12px 12px 45px;
-	border-radius: 50px;
+	border-radius: 50px; /* Pill shape */
 	border: 1px solid var(--glass-border);
 	background: var(--glass-btn-bg);
 	backdrop-filter: blur(10px);
