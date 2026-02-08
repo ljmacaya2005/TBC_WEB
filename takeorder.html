@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="css/version-island.css">
     <link rel="stylesheet" href="css/landscape-restriction.css">
     <link rel="stylesheet" href="css/takeorder.css">
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+
     <script src="js/swal2.js"></script>
     <script src="js/session-handler.js"></script>
     <script>
@@ -129,6 +133,17 @@
                                     d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
                             </svg>
                             <span>User Management</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="sessionmanagement.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M12 1a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zm-1 2H5v11h6V3z" />
+                                <path d="M8 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                            </svg>
+                            <span>Session Management</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -295,11 +310,11 @@
                         <button class="checkout-btn" onclick="handleCheckout()">
                             Checkout
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                                 stroke-linejoin="round">
-                                <path d="M8 19v-14h3.5a4.5 4.5 0 1 1 0 9h-3.5"></path>
-                                <path d="M18 8h-12"></path>
-                                <path d="M18 11h-12"></path>
+                                <path d="M7 6h8a4 4 0 0 1 0 8H7v6"></path>
+                                <line x1="5" y1="10" x2="17" y2="10"></line>
+                                <line x1="5" y1="14" x2="17" y2="14"></line>
                             </svg>
                         </button>
                     </div>
@@ -367,10 +382,11 @@
                 </div>
                 <button class="checkout-btn" onclick="handleCheckout()">
                     Check Out <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                         stroke-linejoin="round">
-                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        <path d="M7 6h8a4 4 0 0 1 0 8H7v6"></path>
+                        <line x1="5" y1="10" x2="17" y2="10"></line>
+                        <line x1="5" y1="14" x2="17" y2="14"></line>
                     </svg>
                 </button>
             </div>
@@ -479,6 +495,85 @@
             </svg>
         </button>
     </div>
+
+    <!-- Payment Panel Modal -->
+    <div class="modal-overlay" id="paymentModalOverlay">
+        <div class="custom-modal" style="max-width: 500px;">
+            <button class="close-modal-btn" onclick="closePaymentModal()">&times;</button>
+            <h2 style="margin-bottom: 25px; color: #A67B5B;">Payment Details</h2>
+            <form id="paymentForm" onsubmit="event.preventDefault(); processPayment();">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Customer Name</label>
+                    <input type="text" id="payCustomerName" placeholder="Walk-in / Name"
+                        style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Payment Method</label>
+                    <select id="payMethod"
+                        style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);"
+                        onchange="toggleRefField()">
+                        <option value="cash">Cash</option>
+                        <option value="gcash">GCash</option>
+                        <option value="card">Card</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Total Amount</label>
+                    <input type="text" id="payTotal" readonly value="₱0.00"
+                        style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.05); font-weight: bold; color: #A67B5B; font-size: 1.2rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Amount Tendered</label>
+                    <input type="number" id="payTendered" step="0.01"
+                        style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);"
+                        oninput="calculateChange()">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Change</label>
+                    <input type="text" id="payChange" readonly value="₱0.00"
+                        style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.05);">
+                </div>
+                <div class="form-group" id="refLinkGroup" style="margin-bottom: 15px; display: none;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Reference No.</label>
+                    <input type="text" id="payRefNo"
+                        style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+                </div>
+
+                <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn-secondary" onclick="closePaymentModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Confirm Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Inline script for payment modal logic (can be moved to takeorder.js)
+        function toggleRefField() {
+            const method = document.getElementById('payMethod').value;
+            const refGroup = document.getElementById('refLinkGroup');
+            if (method !== 'cash') {
+                refGroup.style.display = 'block';
+            } else {
+                refGroup.style.display = 'none';
+            }
+        }
+        function calculateChange() {
+            const totalStr = document.getElementById('payTotal').value.replace(/[^\d.]/g, '');
+            const total = parseFloat(totalStr) || 0;
+            const tendered = parseFloat(document.getElementById('payTendered').value) || 0;
+            const change = tendered - total;
+            document.getElementById('payChange').value = '₱' + (change > 0 ? change.toFixed(2) : '0.00');
+        }
+        // openPaymentModal and closePaymentModal attached to window for access usually
+        window.openPaymentModal = (totalAmount) => {
+            document.getElementById('payTotal').value = totalAmount;
+            document.getElementById('paymentModalOverlay').classList.add('show');
+        }
+        window.closePaymentModal = () => {
+            document.getElementById('paymentModalOverlay').classList.remove('show');
+        }
+    </script>
 
     <script src="js/color-modes.js" defer></script>
     <script src="js/home.js" defer></script>

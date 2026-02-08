@@ -9,7 +9,10 @@
 	<link rel="stylesheet" href="css/home.css">
 	<link rel="stylesheet" href="css/version-island.css">
 	<link rel="stylesheet" href="css/landscape-restriction.css">
-	<script src="js/swal2.js"></script>
+	<!-- Supabase SDK -->
+	<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+	<script src="js/supabase-config.js"></script>
+
 	<script src="js/swal2.js"></script>
 	<script src="js/session-handler.js"></script>
 	<script src="js/zoom-lock.js"></script>
@@ -43,17 +46,7 @@
 		transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, fill 0.3s ease, stroke 0.3s ease, box-shadow 0.3s ease !important;
 	}
 
-	.user-link {
-		background: rgba(0, 0, 0, 0.05);
-		border: 1px solid rgba(0, 0, 0, 0.05);
-		padding: 6px 16px;
-		border-radius: 50px;
-		display: flex;
-		align-items: center;
-		cursor: pointer;
-		color: inherit;
-		font-family: inherit;
-	}
+
 
 	/* Theme Switcher Container Fix */
 	.theme-menu {
@@ -183,6 +176,17 @@
 						</a>
 					</li>
 					<li class="nav-item">
+						<a href="sessionmanagement.html" class="nav-link">
+							<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+								fill="currentColor">
+								<path
+									d="M12 1a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zm-1 2H5v11h6V3z" />
+								<path d="M8 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+							</svg>
+							<span>Session Management</span>
+						</a>
+					</li>
+					<li class="nav-item">
 						<a href="settings.html" class="nav-link">
 							<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
 								fill="currentColor">
@@ -265,6 +269,14 @@
 						<div class="home-card" onclick="location.href='vieworders.html'">
 							<h3 style="font-size: 1rem; opacity: 0.8;">Pending Orders</h3>
 							<div class="stat-value">12</div>
+						</div>
+						<div class="home-card" onclick="location.href='orderhistory.html?filter=refunded'">
+							<h3 style="font-size: 1rem; opacity: 0.8;">Total Refunds</h3>
+							<div class="stat-value" style="color: #e74c3c;">₱1,500</div>
+						</div>
+						<div class="home-card" onclick="location.href='stocks.html?filter=low'">
+							<h3 style="font-size: 1rem; opacity: 0.8;">Low Stock Warning</h3>
+							<div class="stat-value" style="color: #f1c40f;">3 Items</div>
 						</div>
 						<div class="home-card"
 							onclick="if(window.playSwalAudio) window.playSwalAudio('info'); Swal.fire({title:'Statistics', text:'Analytics module is loading...', icon:'info', confirmButtonColor:'#A67B5B'})">

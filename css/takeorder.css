@@ -85,7 +85,6 @@
     overflow-x: auto;
     padding-bottom: 5px;
     scrollbar-width: none;
-    /* Hide scrollbar Firefox */
 }
 
 .category-filter::-webkit-scrollbar {
@@ -96,30 +95,54 @@
     padding: 10px 20px;
     border-radius: 50px;
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
     color: var(--text-color);
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 500;
     font-size: 0.95rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.category-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-25deg);
+    transition: 0.6s;
+    pointer-events: none;
+}
+
+.category-btn:hover::before {
+    left: 150%;
 }
 
 .category-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.1);
 }
 
 .category-btn.active {
     background: var(--brand-color);
     color: var(--bg-color);
-    /* Contrast text against brand color */
     border-color: var(--brand-color);
     font-weight: 700;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Fix for light mode text on active button if brand color is dark */
 [data-theme="light"] .category-btn.active {
     color: #fff;
 }
@@ -170,9 +193,7 @@
     overflow: hidden;
     background: rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
-    /* Prevent collapsing */
     min-height: 140px;
-    /* Enforce height */
 }
 
 .animate-fade-in {
@@ -210,9 +231,9 @@
     opacity: 0.7;
     margin: 0;
     flex: 1;
-    /* Push price down */
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -236,17 +257,39 @@
     border-radius: 50%;
     background: var(--brand-color);
     color: var(--bg-color);
-    /* Contrast */
     display: flex;
     align-items: center;
     justify-content: center;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    border-left: 1px solid rgba(255, 255, 255, 0.4);
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.add-btn-mini::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-25deg);
+    transition: 0.5s;
+    pointer-events: none;
 }
 
 .product-card:hover .add-btn-mini {
     transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.product-card:hover .add-btn-mini::before {
+    left: 150%;
 }
 
 /* Cart Section */
@@ -358,7 +401,9 @@
 .qty-btn {
     width: 24px;
     height: 24px;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.1);
     border-radius: 6px;
     display: flex;
@@ -368,11 +413,16 @@
     color: var(--text-color);
     font-size: 1rem;
     line-height: 1;
-    transition: background 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .qty-btn:hover {
     background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .qty-display {
@@ -385,7 +435,6 @@
 .cart-footer {
     padding: 20px;
     background: rgba(0, 0, 0, 0.1);
-    /* Slightly darker */
     border-top: 1px solid var(--glass-border);
     display: flex;
     flex-direction: column;
@@ -410,30 +459,52 @@
 
 .checkout-btn {
     width: 100%;
-    padding: 15px;
-    border: none;
-    border-radius: 12px;
-    background: var(--brand-color);
-    color: var(--bg-color);
-    font-size: 1rem;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    border-left: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 16px;
+    background: linear-gradient(135deg, #4E342E 0%, #3E2723 100%);
+    color: #ffffff !important;
+    font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+}
+
+.checkout-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-25deg);
+    transition: 0.6s;
+    pointer-events: none;
 }
 
 .checkout-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    filter: brightness(1.1);
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 15px 40px rgba(78, 52, 46, 0.4);
+    background: linear-gradient(135deg, #5D4037 0%, #4E342E 100%);
 }
 
-.checkout-btn:active {
-    transform: translateY(0);
+.checkout-btn:hover::before {
+    left: 150%;
+}
+
+.checkout-btn svg {
+    stroke-width: 2.5;
 }
 
 /* Light mode overrides for contrast logic if not handled by vars */
@@ -444,7 +515,6 @@
 /* Responsive adjustments */
 @media (max-width: 900px) {
 
-    /* Override global overflow hidden to allow scrolling on mobile */
     body,
     html,
     .home-wrapper,
@@ -459,7 +529,6 @@
         min-height: calc(100vh - 80px);
         overflow: visible;
         padding-bottom: 90px;
-        /* Space for the floating button */
     }
 
     .pos-menu-section {
@@ -469,15 +538,12 @@
     .products-grid {
         overflow: visible;
         grid-template-columns: repeat(2, 1fr);
-        /* Force 2 columns */
         gap: 10px;
         padding-right: 0;
-        /* Remove scrollbar padding adjustment */
     }
 
     .product-card {
         min-height: 200px;
-        /* Smaller min-height for mobile */
     }
 
     .product-image-area {
@@ -491,19 +557,15 @@
 
     .pos-cart-section {
         display: none !important;
-        /* Completely hide desktop cart on mobile */
     }
 
-    /* Specialized Mobile Cart Modal Styling */
     #mobileCartModal {
         z-index: 2000;
-        /* Above everything */
         display: none;
     }
 
     #mobileCartModal.show {
         display: flex;
-        /* Flex to center */
     }
 
     .mobile-cart-modal-content {
@@ -514,13 +576,6 @@
         width: 90%;
         max-width: 400px;
         position: relative;
-    }
-
-    .mobile-cart-modal-content .cart-items-container {
-        flex: 1;
-        overflow-y: auto;
-        min-height: 200px;
-        margin: 10px 0;
     }
 
     .cart-toggler {
@@ -550,12 +605,6 @@
         transform: translateX(-50%) scale(0.98);
     }
 
-    .cart-icon-badge {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
     .badge-count {
         position: absolute;
         top: -8px;
@@ -571,11 +620,6 @@
         justify-content: center;
         border: 2px solid var(--brand-color);
     }
-
-    .cart-items-container {
-        max-height: 60vh;
-        /* Limit height inside sheet */
-    }
 }
 
 @media (min-width: 901px) {
@@ -584,202 +628,7 @@
     }
 }
 
-/* Override theme menu opacity and colors for POS page */
-.theme-menu {
-    background: #fff !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    opacity: 1 !important;
-    border-color: rgba(0, 0, 0, 0.1) !important;
-}
-}
-
-.cart-total-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin-top: 5px;
-    color: var(--brand-color);
-}
-
-.checkout-btn {
-    width: 100%;
-    padding: 15px;
-    border: none;
-    border-radius: 12px;
-    background: var(--brand-color);
-    color: var(--bg-color);
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
-
-.checkout-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    filter: brightness(1.1);
-}
-
-.checkout-btn:active {
-    transform: translateY(0);
-}
-
-/* Light mode overrides for contrast logic if not handled by vars */
-[data-theme="light"] .add-btn-mini {
-    color: #fff;
-}
-
-/* Responsive adjustments */
-@media (max-width: 900px) {
-
-    /* Override global overflow hidden to allow scrolling on mobile */
-    body,
-    html,
-    .home-wrapper,
-    .home-main-content {
-        height: auto !important;
-        overflow: auto !important;
-    }
-
-    .pos-container {
-        flex-direction: column;
-        height: auto !important;
-        min-height: calc(100vh - 80px);
-        overflow: visible;
-        padding-bottom: 90px;
-        /* Space for the floating button */
-    }
-
-    .pos-menu-section {
-        overflow: visible;
-    }
-
-    .products-grid {
-        overflow: visible;
-        grid-template-columns: repeat(2, 1fr);
-        /* Force 2 columns */
-        gap: 10px;
-        padding-right: 0;
-        /* Remove scrollbar padding adjustment */
-    }
-
-    .product-card {
-        min-height: 200px;
-        /* Smaller min-height for mobile */
-    }
-
-    .product-image-area {
-        height: 110px;
-        min-height: 110px;
-    }
-
-    .product-title {
-        font-size: 0.9rem;
-    }
-
-    .pos-cart-section {
-        display: none !important;
-        /* Completely hide desktop cart on mobile */
-    }
-
-    /* Specialized Mobile Cart Modal Styling */
-    #mobileCartModal {
-        z-index: 2000;
-        /* Above everything */
-        display: none;
-    }
-
-    #mobileCartModal.show {
-        display: flex;
-        /* Flex to center */
-    }
-
-    .mobile-cart-modal-content {
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        max-height: 85vh;
-        width: 90%;
-        max-width: 400px;
-        position: relative;
-    }
-
-    .mobile-cart-modal-content .cart-items-container {
-        flex: 1;
-        overflow-y: auto;
-        min-height: 200px;
-        margin: 10px 0;
-    }
-
-    .cart-toggler {
-        display: flex;
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1400;
-        background: var(--brand-color);
-        color: var(--bg-color);
-        border: none;
-        padding: 12px 24px;
-        border-radius: 50px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        align-items: center;
-        gap: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        width: 90%;
-        max-width: 350px;
-        justify-content: space-between;
-        transition: all 0.2s;
-    }
-
-    .cart-toggler:active {
-        transform: translateX(-50%) scale(0.98);
-    }
-
-    .cart-icon-badge {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .badge-count {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: #e74c3c;
-        color: white;
-        font-size: 0.7rem;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid var(--brand-color);
-    }
-
-    .cart-items-container {
-        max-height: 60vh;
-        /* Limit height inside sheet */
-    }
-}
-
-@media (min-width: 901px) {
-    .cart-toggler {
-        display: none;
-    }
-}
-
-/* Override theme menu opacity and colors for POS page */
+/* Theme menu overrides */
 .theme-menu {
     background: #fff !important;
     backdrop-filter: none !important;
@@ -788,21 +637,11 @@
     border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
-.theme-menu .dropdown-item {
-    color: #212529 !important;
-}
-
-.theme-menu .dropdown-item:hover {
-    background: rgba(0, 0, 0, 0.05) !important;
-}
-
-/* Override global popup shadow for Toasts */
 div:where(.swal2-container) div:where(.swal2-popup).swal2-toast {
     box-shadow: none !important;
     border: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Mobile Toast Slide Up Animation */
 @keyframes slideUpFromToggler {
     0% {
         opacity: 0;
@@ -819,11 +658,72 @@ div:where(.swal2-container) div:where(.swal2-popup).swal2-toast {
     animation: slideUpFromToggler 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
-/* Mobile Toast Positioning */
 div:where(.swal2-container).swal2-bottom>.swal2-popup.mobile-toast-popup {
     margin-bottom: 58px !important;
-    /* Clear the floating button */
     background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(10px) !important;
     -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* --- General Buttons --- */
+.btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--accent-color, #A67B5B);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-25deg);
+    transition: 0.6s;
+    pointer-events: none;
+}
+
+.btn-primary:hover::before {
+    left: 150%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    filter: brightness(1.1);
+}
+
+.btn-secondary {
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
 }

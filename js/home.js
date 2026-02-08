@@ -98,8 +98,7 @@
     const actionsModal = document.getElementById('actionsModalOverlay');
 
     viewProfileBtn?.addEventListener('click', () => {
-      profileModal?.classList.add('show');
-      profileMenu?.classList.remove('show');
+      window.location.href = 'profile.html';
     });
 
     viewActionsBtn?.addEventListener('click', () => {
@@ -185,6 +184,39 @@
     if (username) {
       document.querySelectorAll('.user-name').forEach(el => el.textContent = username);
       document.querySelectorAll('.user-name-display').forEach(el => el.textContent = username);
+    }
+
+    // Carousel Drag-to-Scroll Logic
+    const slider = document.getElementById('priorityCarousel');
+    const wrapper = document.querySelector('.priority-list-wrapper');
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    if (slider && wrapper) {
+      wrapper.addEventListener('mousedown', (e) => {
+        isDown = true;
+        slider.style.scrollBehavior = 'auto'; // Disable smooth scroll during drag
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDown = false;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 2; // Scroll speed multiplier
+        slider.scrollLeft = scrollLeft - walk;
+      });
+
+      // Cleanup smooth scroll on drag end
+      wrapper.addEventListener('mouseleave', () => {
+        isDown = false;
+      });
     }
 
     // --- Logic migrated from home.html to centralize code ---

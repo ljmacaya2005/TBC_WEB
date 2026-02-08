@@ -1,0 +1,170 @@
+/* Session Management Stylings */
+/* Mirroring User Management Design */
+
+.sessions-container {
+    background: var(--card-bg, #fff);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 20px auto;
+    width: 100%;
+    max-width: 100%;
+    box-shadow:
+        0 10px 30px -5px rgba(0, 0, 0, 0.1),
+        0 8px 10px -5px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s ease;
+    overflow-x: auto;
+}
+
+.sessions-container:hover {
+    box-shadow:
+        0 20px 40px -5px rgba(0, 0, 0, 0.12),
+        0 10px 15px -5px rgba(0, 0, 0, 0.06);
+}
+
+.sessions-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.sessions-table th {
+    text-align: left;
+    padding: 20px;
+    font-weight: 700;
+    color: var(--text-color, #333);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sessions-table td {
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    vertical-align: middle;
+    color: var(--text-color, #555);
+}
+
+.sessions-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.sessions-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.sessions-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* User Info in Table */
+.session-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.session-user-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #A67B5B;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-expired {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Device Info */
+.device-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.device-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.browser-name {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* IP Info */
+.ip-text {
+    font-family: monospace;
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Actions */
+.btn-terminate {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.1));
+    color: #e74c3c;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    border-left: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 10px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+}
+
+.btn-terminate::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-25deg);
+    transition: 0.6s;
+    pointer-events: none;
+}
+
+.btn-terminate:hover::before {
+    left: 150%;
+}
+
+.btn-terminate:hover {
+    background: #e74c3c;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+}
+
+.btn-terminate:active {
+    transform: translateY(0);
+}

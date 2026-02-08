@@ -245,22 +245,45 @@ async function handleLogin(event) {
 			}
 		});
 
-		// 1. Authenticate with Firebase Auth
-		const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
-		const user = userCredential.user;
+		if (!window.sb) {
+			throw new Error("Supabase client not ready. Please refresh.");
+		}
 
-		// 2. Get User Info directly from Auth Object (since users are not in Firestore)
-		// Use email prefix as username if displayName is not set
-		const displayUsername = user.displayName || user.email.split('@')[0];
+		// Authenticate with Supabase
+		const { data, error } = await window.sb.auth.signInWithPassword({
+			email: email,
+			password: password
+		});
 
-		// Store login state
+		if (error) throw error;
+
+		const user = data.user;
+		// Basic username from email
+		const displayUsername = user.email ? user.email.split('@')[0] : 'User';
+
+		// Store Basic Session Flag (for session-handler.js fallback)
 		localStorage.setItem('isLoggedIn', 'true');
 		localStorage.setItem('username', displayUsername);
 
-		// Optional: If you have a specific admin email, you can hardcode a role check here
-		// if (user.email === 'admin@brand.com') localStorage.setItem('role', 'admin');
+		// Fetch User Role from Public Table
+		try {
+			const { data: userData } = await window.sb
+				.from('users')
+				.select('role')
+				.eq('id', user.id)
+				.single();
 
-		// Show success alert and redirect
+			if (userData && userData.role) {
+				localStorage.setItem('role', userData.role);
+			} else {
+				localStorage.setItem('role', 'Staff'); // Default
+			}
+		} catch (ignored) {
+			console.warn("Could not fetch user role, defaulting to Staff");
+			localStorage.setItem('role', 'Staff');
+		}
+
+		// Success Redirect
 		Swal.fire({
 			title: 'Login Successful!',
 			text: `Welcome back, ${displayUsername}!`,
@@ -270,55 +293,21 @@ async function handleLogin(event) {
 			timerProgressBar: true,
 			allowOutsideClick: false,
 			didClose: () => {
-				// Redirect to dashboard
 				window.location.href = 'home.html';
 			}
 		});
 
 	} catch (error) {
 		console.error("Login Error:", error);
-
-		let errorMessage = "Unable to sign in. Please check your information.";
-
-		// Map specific Firebase error codes to formal user-friendly messages
-		switch (error.code) {
-			case 'auth/user-not-found':
-			case 'auth/wrong-password':
-			case 'auth/invalid-credential':
-				errorMessage = "Invalid email or password.";
-				break;
-			case 'auth/invalid-email':
-				errorMessage = "The email address is badly formatted.";
-				break;
-			case 'auth/too-many-requests':
-				errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.";
-				break;
-			case 'auth/network-request-failed':
-				errorMessage = "Network error. Please check your internet connection.";
-				break;
-			default:
-				// If it's a custom error thrown by our code
-				if (error.message && !error.message.startsWith('Firebase:')) {
-					errorMessage = error.message;
-				}
-			// Otherwise keep the generic "Unable to sign in..." message to avoid showing raw technical errors
+		let msg = error.message;
+		if (msg && (msg.includes('Invalid login credentials') || msg.includes('Email not confirmed'))) {
+			msg = 'Invalid email or password';
 		}
-
-		// Show error alert using SweetAlert2
 		Swal.fire({
 			title: 'Login Failed',
-			text: errorMessage,
+			text: msg ? msg : 'An error occurred during login',
 			icon: 'error',
-			confirmButtonColor: '#7066e0',
-			timer: 3000,
-			timerProgressBar: true,
-			didClose: () => {
-				// Clear password field after error
-				document.getElementById('password').value = '';
-				window.actualPassword = '';
-				// Don't clear email to let them retry
-				// document.getElementById('username').focus();
-			}
+			confirmButtonColor: '#d33'
 		});
 	}
 }

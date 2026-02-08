@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Brew Cave — My Profile</title>
+    <link rel="icon" type="image/x-icon" href="assets/icon.png">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/version-island.css">
+    <link rel="stylesheet" href="css/landscape-restriction.css">
+    <link rel="stylesheet" href="css/profile.css">
+
+    <!-- Scripts -->
+    <script src="js/swal2.js"></script>
+    <script src="js/session-handler.js"></script>
+    <script src="js/zoom-lock.js"></script>
+
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+</head>
+
+<script>
+    // Immediately set the theme
+    (() => {
+        const getStoredTheme = () => localStorage.getItem('theme');
+        const getPreferredTheme = () => {
+            const storedTheme = getStoredTheme();
+            if (storedTheme) return storedTheme;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        };
+        const theme = getPreferredTheme();
+        document.documentElement.setAttribute('data-theme', theme);
+    })();
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else if (document.exitFullscreen) document.exitFullscreen();
+    }
+</script>
+
+<style>
+    /* Override Google Fonts for page title to match other pages */
+    .page-title {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    }
+
+    /* Enhanced SweetAlert2 Modal Styling */
+    .animated-modal {
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Custom SweetAlert Input Styling */
+    .swal2-input {
+        border: 2px solid #e0e0e0 !important;
+        border-radius: 10px !important;
+        padding: 12px 15px !important;
+        font-size: 15px !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .swal2-input:focus {
+        border-color: #A67B5B !important;
+        box-shadow: 0 0 0 3px rgba(166, 123, 91, 0.1) !important;
+        outline: none !important;
+    }
+
+    .swal2-input::placeholder {
+        color: #999 !important;
+    }
+
+    /* SweetAlert Button Enhancements */
+    .swal2-confirm,
+    .swal2-cancel {
+        border-radius: 8px !important;
+        padding: 10px 24px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .swal2-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .swal2-cancel:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Loading Spinner Color */
+    .swal2-loader {
+        border-color: #A67B5B transparent #A67B5B transparent !important;
+    }
+
+    /* Modal Popup Styling */
+    .swal2-popup {
+        border-radius: 20px !important;
+        padding: 30px !important;
+    }
+
+    .swal2-title {
+        font-size: 24px !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+    }
+
+    .swal2-html-container {
+        font-size: 15px !important;
+        line-height: 1.6 !important;
+    }
+
+    /* Validation Message Styling */
+    .swal2-validation-message {
+        background: #fff3cd !important;
+        color: #856404 !important;
+        border: 1px solid #ffeaa7 !important;
+        border-radius: 8px !important;
+        padding: 8px 12px !important;
+    }
+
+    /* Success Icon Animation */
+    .swal2-success {
+        border-color: #A67B5B !important;
+    }
+
+    .swal2-success-ring {
+        border: 4px solid rgba(166, 123, 91, 0.2) !important;
+    }
+
+    .swal2-success-line-tip,
+    .swal2-success-line-long {
+        background-color: #A67B5B !important;
+    }
+
+    /* Timer Progress Bar */
+    .swal2-timer-progress-bar {
+        background: rgba(166, 123, 91, 0.8) !important;
+    }
+
+    /* Fix z-index issues */
+    .swal2-container {
+        z-index: 10000 !important;
+    }
+
+    .swal2-backdrop-show {
+        z-index: 9999 !important;
+    }
+
+    /* Ensure modal closes properly */
+    .swal2-hide {
+        animation: swal2-hide 0.15s ease-out !important;
+    }
+
+    @keyframes swal2-hide {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+    }
+</style>
+
+<body>
+    <div class="home-wrapper">
+        <!-- Sidebar (Matches Dashboard) -->
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <a href="#" class="sidebar-brand">
+                <img id="brandIcon" src="assets/logo-white.png" alt="The Brew Cave Logo" class="brand-icon">
+                <span class="brand-text">THE BREW CAVE</span>
+            </a>
+            <hr class="sidebar-divider">
+            <nav class="sidebar-nav">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="home.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4H2.5z" />
+                            </svg>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="dashboard.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zM3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10zm9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.389.389 0 0 0-.527-.02L7.547 9.31a.91.91 0 1 0 1.302 1.258l3.434-4.297a.389.389 0 0 0-.029-.518z" />
+                                <path fill-rule="evenodd"
+                                    d="M0 10a8 8 0 1 1 15.547 2.661c-.442 1.253-1.845 1.602-2.932 1.25C11.309 13.488 9.475 13 8 13c-1.474 0-3.31.488-4.615.911-1.087.352-2.49.003-2.932-1.25A7.988 7.988 0 0 1 0 10zm8-7a7 7 0 0 0-6.603 9.329c.203.575.923.876 1.68.63C4.397 12.533 6.358 12 8 12s3.604.532 4.923.96c.757.245 1.477-.056 1.68-.631A7 7 0 0 0 8 3z" />
+                            </svg>
+                            <span>Overview</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="takeorder.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M9 5.5a.5.5 0 0 0-1 0V7H6.5a.5.5 0 0 0 0 1H8v1.5a.5.5 0 0 0 1 0V8h1.5a.5.5 0 0 0 0-1H9V5.5z" />
+                                <path
+                                    d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zm3.915 10L3.102 4h10.796l-1.313 7h-8.17zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                            </svg>
+                            <span>Take Order</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="vieworders.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z" />
+                            </svg>
+                            <span>View Orders</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="stocks.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.24v7.922l6.5 2.6zM1.496 2.755L8 5.356l6.504-2.601L8 0.156l-6.504 2.599z" />
+                            </svg>
+                            <span>Stocks</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="orderhistory.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 1 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.74l.831-.557c.19.285.358.58.504.888l-.896.409zm.61 1.895a7.03 7.03 0 0 0-.287-.388l.768-.641c.124.15.24.305.344.466l-.825.563zM11 11a.5.5 0 0 1-.5-.5V5a.5.5 0 1 1 1 0v5h4a.5.5 0 1 1 0 1h-4.5z" />
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8z" />
+                            </svg>
+                            <span>Order History</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="usermanagement.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                            </svg>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="sessionmanagement.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M12 1a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zm-1 2H5v11h6V3z" />
+                                <path d="M8 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                            </svg>
+                            <span>Session Management</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="settings.html" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.17.311c.586 1.06.368 2.396-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.17a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.17-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.17a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z" />
+                            </svg>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="version-island version-island-sidebar">
+                <svg class="version-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span class="version-text">System v4.3</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="home-main-content">
+            <header class="home-header">
+                <div class="header-content">
+                    <h1 class="page-title">MY PROFILE</h1>
+                    <p class="page-subtitle">Manage your account settings</p>
+                </div>
+                <div class="user-profile header-profile" id="userProfileDropdown">
+                    <button class="user-link" id="profileBtn" type="button">
+                        <img src="https://github.com/mdo.png" alt="User" class="user-avatar">
+                        <span class="user-name">Admin</span>
+                        <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                            stroke-linecap="round" stroke-linejoin="round" style="margin-left: 8px; opacity: 0.6;">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="profile-dropdown-menu" id="profileMenu">
+                        <button class="dropdown-item" id="viewProfileBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="margin-right: 10px;">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            View Profile
+                        </button>
+                        <button class="dropdown-item" id="viewActionsBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="margin-right: 10px;">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                            </svg>
+                            Recent Actions
+                        </button>
+                        <hr
+                            style="margin: 5px 0; border: none; border-top: 1px solid var(--border-color, #eee); opacity: 0.5;">
+                        <button class="dropdown-item sign-out-item" id="signoutBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="margin-right: 10px;">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="container-fluid px-4 profile-content-padding">
+                <div class="row g-4">
+                    <!-- Profile Card -->
+                    <div class="col-xl-4 col-lg-5">
+                        <div
+                            class="home-card profile-main-card p-0 overflow-hidden animate__animated animate__fadeInUp">
+                            <div class="profile-header-gradient p-4 text-center text-white">
+                                <div class="profile-avatar-large mb-3 mx-auto shadow-lg position-relative"
+                                    style="width: 120px; height: 120px;">
+                                    <img src="https://ui-avatars.com/api/?name=User&background=A67B5B&color=fff&size=180"
+                                        alt="Profile Large" class="rounded-circle border border-4 border-white-50"
+                                        id="userAvatar" style="width: 100%; height: 100%; object-fit: cover;">
+
+                                    <label for="avatarUpload"
+                                        class="position-absolute bottom-0 end-0 bg-dark text-white p-2 rounded-circle shadow-sm cursor-pointer d-flex align-items-center justify-content-center"
+                                        style="width: 36px; height: 36px; cursor: pointer; border: 2px solid white; transition: transform 0.2s;"
+                                        onmouseover="this.style.transform='scale(1.1)'"
+                                        onmouseout="this.style.transform='scale(1)'" title="Change Profile Picture">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path
+                                                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                                            </path>
+                                            <circle cx="12" cy="13" r="4"></circle>
+                                        </svg>
+                                    </label>
+                                    <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                                </div>
+                                <h3 class="fw-bold mb-1" id="userNameDisplay">Loading...</h3>
+                                <p class="text-white-50 small fw-medium mb-0" id="userRoleDisplay">Administrator</p>
+                            </div>
+
+                            <div class="p-4 bg-glass-card">
+                                <div class="row g-2 text-center mb-4">
+                                    <div class="col-6">
+                                        <div
+                                            class="p-2 rounded bg-primary-soft border border-primary border-opacity-10">
+                                            <div class="h4 fw-bold mb-0" id="statTasks">--</div>
+                                            <div class="text-secondary smaller">Orders Taken</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 rounded bg-info-soft border border-info border-opacity-10">
+                                            <div class="h4 fw-bold mb-0" id="statSessions">--</div>
+                                            <div class="text-secondary smaller">Days Active</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="list-group list-group-flush border-0 mb-4">
+                                    <div class="list-group-item bg-transparent px-0 py-3 border-opacity-10">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-shape bg-primary-soft me-3">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path
+                                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                    <polyline points="22,6 12,13 2,6" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="small text-secondary">Email address</div>
+                                                <div class="fw-semibold" id="userEmailDisplay">--</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item bg-transparent px-0 py-3 border-opacity-10">
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon-shape bg-info-soft me-3">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path
+                                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="small text-secondary">Contact Number</div>
+                                                <div class="fw-semibold" id="userPhoneDisplay">--</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-glass-danger w-100 rounded-pill btn-sm" id="signOutBtn">
+                                    Sign Out Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Form -->
+                    <div class="col-xl-8 col-lg-7">
+                        <div class="home-card p-0 overflow-hidden animate__animated animate__fadeInRight">
+                            <ul class="nav nav-tabs profile-tabs px-4 border-bottom border-light border-opacity-10"
+                                id="profileTabs" role="tablist">
+                                <li class="nav-item">
+                                    <button class="nav-link active py-3" id="details-tab" data-bs-toggle="tab"
+                                        data-bs-target="#details" type="button" role="tab">Personal Details</button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link py-3" id="security-tab" data-bs-toggle="tab"
+                                        data-bs-target="#security" type="button" role="tab">Security & Privacy</button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content px-0" id="profileTabsContent">
+                                <div class="tab-pane fade show active" id="details" role="tabpanel">
+                                    <div class="p-4 p-md-5">
+                                        <form id="profileForm">
+                                            <div class="d-flex flex-column gap-4">
+                                                <div class="row g-4">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group mb-0">
+                                                            <label
+                                                                class="form-label fw-bold small text-uppercase opacity-75">First
+                                                                Name</label>
+                                                            <input type="text" class="form-control"
+                                                                id="profileFirstName" placeholder="First Name">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group mb-0">
+                                                            <label
+                                                                class="form-label fw-bold small text-uppercase opacity-75">Last
+                                                                Name</label>
+                                                            <input type="text" class="form-control" id="profileLastName"
+                                                                placeholder="Last Name">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group mb-0">
+                                                    <label
+                                                        class="form-label fw-bold small text-uppercase opacity-75">Email
+                                                        Address</label>
+                                                    <input type="email" class="form-control" id="profileEmail"
+                                                        placeholder="Email Address" readonly disabled>
+                                                </div>
+
+                                                <div class="form-group mb-0">
+                                                    <label
+                                                        class="form-label fw-bold small text-uppercase opacity-75">Phone
+                                                        Number</label>
+                                                    <input type="tel" class="form-control" id="profilePhone"
+                                                        placeholder="+63 9XX XXX XXXX">
+                                                </div>
+
+                                                <div class="form-group mb-0">
+                                                    <label
+                                                        class="form-label fw-bold small text-uppercase opacity-75">Bio /
+                                                        Description</label>
+                                                    <textarea class="form-control" id="profileBio" rows="4"
+                                                        placeholder="Write something about yourself..."></textarea>
+                                                </div>
+
+                                                <div class="mt-2 text-start">
+                                                    <button type="submit"
+                                                        class="btn btn-primary px-5 py-2 fw-semibold rounded-pill shadow-lg">Save
+                                                        Profile Changes</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane fade" id="security" role="tabpanel">
+                                    <div class="p-4 p-md-5">
+                                        <div class="security-item mb-5">
+                                            <div class="d-flex align-items-center mb-4">
+                                                <div class="icon-shape bg-info-soft me-3 p-2">
+                                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <path
+                                                            d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                        <polyline points="22,6 12,13 2,6" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h5 class="fw-bold mb-0">Email Address</h5>
+                                                    <p class="text-secondary small mb-0" id="currentEmailStatus">
+                                                        Verified Primary Email</p>
+                                                </div>
+                                            </div>
+                                            <div class="security-action-card p-4 rounded-4 border">
+                                                <div class="row g-3 align-items-center">
+                                                    <div class="col-lg-8 col-md-7">
+                                                        <p class="mb-0 fw-medium opacity-75">Keep your login email up to
+                                                            date for account notifications and secure access.</p>
+                                                    </div>
+                                                    <div class="col-lg-4 col-md-5 text-md-end">
+                                                        <button
+                                                            class="btn btn-primary px-4 py-2 text-white rounded-pill w-100-mobile"
+                                                            id="changeEmailBtn">Change Email</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="security-item mb-5">
+                                            <div class="d-flex align-items-center mb-4">
+                                                <div class="icon-shape bg-warning-soft me-3 p-2">
+                                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round">
+                                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h5 class="fw-bold mb-0">Password Rotation</h5>
+                                                    <p class="text-secondary small mb-0">Protect your account with
+                                                        regular updates</p>
+                                                </div>
+                                            </div>
+                                            <div class="security-action-card p-4 rounded-4 border">
+                                                <div class="row g-3 align-items-center">
+                                                    <div class="col-lg-8 col-md-7">
+                                                        <p class="mb-0 fw-medium opacity-75">Maintain account integrity
+                                                            by rotating your password regularly.</p>
+                                                    </div>
+                                                    <div class="col-lg-4 col-md-5 text-md-end">
+                                                        <button
+                                                            class="btn btn-warning px-4 py-2 rounded-pill w-100-mobile"
+                                                            id="changePassBtn">Change Password</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Recent Actions Modal -->
+    <div class="modal-overlay" id="actionsModalOverlay">
+        <div class="custom-modal actions-modal">
+            <button class="close-modal-btn" onclick="closeAllModals()">&times;</button>
+            <h2 style="margin-bottom: 20px; color: #A67B5B;">Recent Actions</h2>
+            <div class="actions-list">
+                <div class="action-audit-card">
+                    <div class="audit-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="audit-text">
+                        <strong>Logged In</strong>
+                        <p>System access granted</p>
+                        <small>Just now</small>
+                    </div>
+                </div>
+                <p style="text-align: center; opacity: 0.5; margin-top: 20px;">No further records found.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions (Matches Home Page) -->
+    <div class="home-quick-actions fab-container">
+        <div class="fab-items">
+            <!-- Refresh -->
+            <button class="fab-btn" id="fabRefresh" title="Refresh">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+            </button>
+
+            <!-- Fullscreen -->
+            <button class="fab-btn" onclick="toggleFullScreen()" title="Fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                    </path>
+                </svg>
+            </button>
+
+            <!-- Theme Toggle Wrapper -->
+            <div class="theme-btn-wrapper">
+                <button class="fab-btn" id="quick-theme-btn" title="Change Theme">
+                    <!-- Icon set by JS -->
+                </button>
+                <ul class="theme-menu" id="fab-theme-menu">
+                    <li>
+                        <button class="dropdown-item" data-theme-value="light">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg> Light
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" data-theme-value="dark">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg> Dark
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" data-theme-value="auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg> Auto
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <button id="quick-action-trigger" class="fab-main-btn" type="button" aria-label="Quick Actions">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="19" cy="12" r="1"></circle>
+                <circle cx="5" cy="12" r="1"></circle>
+            </svg>
+        </button>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/color-modes.js" defer></script>
+    <script src="js/home.js" defer></script>
+    <script src="js/profile.js" defer></script>
+</body>
+
+</html>

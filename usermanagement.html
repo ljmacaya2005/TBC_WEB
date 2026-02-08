@@ -10,6 +10,10 @@
 	<link rel="stylesheet" href="css/version-island.css">
 	<link rel="stylesheet" href="css/landscape-restriction.css">
 	<link rel="stylesheet" href="css/usermanagement.css">
+	<!-- Supabase SDK -->
+	<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+	<script src="js/supabase-config.js"></script>
+
 	<script src="js/swal2.js"></script>
 	<script src="js/session-handler.js"></script>
 </head>
@@ -403,6 +407,17 @@
 						</a>
 					</li>
 					<li class="nav-item">
+						<a href="sessionmanagement.html" class="nav-link">
+							<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+								fill="currentColor">
+								<path
+									d="M12 1a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zm-1 2H5v11h6V3z" />
+								<path d="M8 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+							</svg>
+							<span>Session Management</span>
+						</a>
+					</li>
+					<li class="nav-item">
 						<a href="settings.html" class="nav-link">
 							<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
 								fill="currentColor">
@@ -478,20 +493,44 @@
 			</header>
 
 			<div class="home-container">
+				<div class="action-bar"
+					style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+					<div class="search-bar-wrapper">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+							class="search-icon">
+							<circle cx="11" cy="11" r="8"></circle>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+						</svg>
+						<input type="text" placeholder="Search users..." class="search-input">
+					</div>
+					<button class="btn-primary" onclick="openUserModal()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<line x1="12" y1="5" x2="12" y2="19"></line>
+							<line x1="5" y1="12" x2="19" y2="12"></line>
+						</svg>
+						Create User
+					</button>
+				</div>
+
 				<div class="users-container glass-panel">
 					<table class="users-table">
 						<thead>
 							<tr>
+								<th>Profile</th>
 								<th>Name</th>
+								<th>Age</th>
+								<th>Position</th>
+								<th>Contact</th>
 								<th>Username</th>
-								<th>Role</th>
 								<th>Status</th>
 								<th>Actions</th>
 							</tr>
 						</thead>
 						<tbody id="usersList">
 							<tr>
-								<td colspan="5" style="text-align:center; padding: 40px; opacity: 0.5;">
+								<td colspan="8" style="text-align:center; padding: 40px; opacity: 0.5;">
 									No user records found.
 								</td>
 							</tr>
@@ -580,6 +619,77 @@
 				<circle cx="5" cy="12" r="1"></circle>
 			</svg>
 		</button>
+	</div>
+
+
+	<!-- User Modification Modal -->
+	<div class="modal-overlay" id="userModalOverlay">
+		<div class="custom-modal" style="max-width: 600px;">
+			<button class="close-modal-btn" onclick="closeUserModal()">&times;</button>
+			<h2 id="userModalTitle" style="margin-bottom: 25px; color: #A67B5B;">Create User Profile</h2>
+			<form id="userForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+				<!-- Profile Picture Upload -->
+				<div style="grid-column: 1 / -1; display: flex; justify-content: center; margin-bottom: 10px;">
+					<div
+						style="position: relative; width: 100px; height: 100px; border-radius: 50%; background: #eee; overflow: hidden; border: 3px solid #A67B5B;">
+						<img id="previewImage" src="https://github.com/mdo.png"
+							style="width: 100%; height: 100%; object-fit: cover;">
+						<div
+							style="position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.5); color: white; font-size: 10px; text-align: center; padding: 3px; cursor: pointer;">
+							Edit</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Name</label>
+					<input type="text" name="name" required
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+				</div>
+				<div class="form-group">
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Age</label>
+					<input type="number" name="age"
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+				</div>
+				<div class="form-group">
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Position</label>
+					<select name="position"
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+						<option value="Staff">Staff</option>
+						<option value="Manager">Manager</option>
+						<option value="Admin">Admin</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Contact Number</label>
+					<input type="tel" name="contact"
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+				</div>
+				<div class="form-group">
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Username</label>
+					<input type="text" name="username" required
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+				</div>
+				<div class="form-group">
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Password</label>
+					<input type="password" name="password"
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+				</div>
+				<div class="form-group">
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Confirm Password</label>
+					<input type="password" name="confirmPassword"
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+				</div>
+
+				<div
+					style="grid-column: 1 / -1; margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px;">
+					<button type="button" class="btn-secondary" onclick="closeUserModal()"
+						style="padding: 10px 20px; border-radius: 50px; border: none; cursor: pointer; background: rgba(0,0,0,0.05);">Cancel</button>
+					<button type="submit" class="btn-primary"
+						style="padding: 10px 20px; border-radius: 50px; border: none; cursor: pointer; background: #A67B5B; color: white;">Save
+						Changes</button>
+				</div>
+			</form>
+		</div>
 	</div>
 
 	<!-- Modals -->

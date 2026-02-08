@@ -10,6 +10,10 @@
 	<link rel="stylesheet" href="css/version-island.css">
 	<link rel="stylesheet" href="css/landscape-restriction.css">
 	<link rel="stylesheet" href="css/orderhistory.css">
+	<!-- Supabase SDK -->
+	<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+	<script src="js/supabase-config.js"></script>
+
 	<script src="js/swal2.js"></script>
 	<script src="js/session-handler.js"></script>
 </head>
@@ -177,6 +181,17 @@
 						</a>
 					</li>
 					<li class="nav-item">
+						<a href="sessionmanagement.html" class="nav-link">
+							<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+								fill="currentColor">
+								<path
+									d="M12 1a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zm-1 2H5v11h6V3z" />
+								<path d="M8 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+							</svg>
+							<span>Session Management</span>
+						</a>
+					</li>
+					<li class="nav-item">
 						<a href="settings.html" class="nav-link">
 							<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
 								fill="currentColor">
@@ -252,13 +267,29 @@
 			</header>
 
 			<div class="home-container">
+				<div class="action-bar"
+					style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+					<div class="search-bar-wrapper">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+							class="search-icon">
+							<circle cx="11" cy="11" r="8"></circle>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+						</svg>
+						<input type="text" placeholder="Search history..." class="search-input">
+					</div>
+				</div>
+
 				<div class="history-container glass-panel">
 					<table class="history-table">
 						<thead>
 							<tr>
-								<th>Order ID</th>
-								<th>Date</th>
+								<th>Transaction ID</th>
+								<th>Date & Time</th>
 								<th>Customer</th>
+								<th>Payment</th>
+								<th>Change</th>
+								<th>Ref No.</th>
 								<th>Total</th>
 								<th>Status</th>
 								<th>Actions</th>
@@ -266,7 +297,7 @@
 						</thead>
 						<tbody id="historyList">
 							<tr>
-								<td colspan="6" style="text-align:center; padding: 40px; opacity: 0.5;">
+								<td colspan="9" style="text-align:center; padding: 40px; opacity: 0.5;">
 									No order history found.
 								</td>
 							</tr>

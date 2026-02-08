@@ -344,29 +344,47 @@ window.handleCheckout = () => {
     }
 
     const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0) * 1.05;
+    // Call the modal function exposed in the HTML script or attach listener here
+    // Since we defined openPaymentModal globally in HTML script block, we can call it.
+    // However, best practice is to have it here. For now, assuming it's available.
+    if (typeof openPaymentModal === 'function') {
+        openPaymentModal('₱' + total.toFixed(2));
+    } else {
+        console.error("openPaymentModal function not found");
+    }
+};
 
+window.processPayment = () => {
+    // Get values
+    const customer = document.getElementById('payCustomerName').value || 'Walk-in';
+    const amountTendered = parseFloat(document.getElementById('payTendered').value) || 0;
+    const totalStr = document.getElementById('payTotal').value.replace(/[^\d.]/g, '');
+    const total = parseFloat(totalStr) || 0;
+
+    if (amountTendered < total) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Insufficient Amount',
+            text: 'Amount tendered is less than the total amount.',
+            confirmButtonColor: '#e74c3c'
+        });
+        return;
+    }
+
+    // Success
+    if (typeof closePaymentModal === 'function') closePaymentModal();
+    
     Swal.fire({
-        title: 'Confirm Order',
-        position: window.innerWidth <= 900 ? 'bottom' : 'center',
-        html: `Total Amount: <strong>₱${total.toFixed(2)}</strong><br>Proceed with payment?`,
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonColor: '#27ae60',
-        cancelButtonColor: '#6e7881',
-        confirmButtonText: 'Pay Now'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Order Placed!',
-                text: 'Printing receipt...',
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false
-            }).then(() => {
-                cart = [];
-                renderCart();
-            });
-        }
+        title: 'Payment Successful!',
+        text: `Change: ₱${(amountTendered - total).toFixed(2)}`,
+        icon: 'success',
+        timer: 3000,
+        showConfirmButton: false
+    }).then(() => {
+        cart = [];
+        renderCart();
+        // Reset form
+        document.getElementById('paymentForm').reset();
     });
 };
 

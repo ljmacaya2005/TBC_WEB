@@ -10,6 +10,10 @@
 	<link rel="stylesheet" href="css/version-island.css">
 	<link rel="stylesheet" href="css/landscape-restriction.css">
 	<link rel="stylesheet" href="css/stocks.css">
+	<!-- Supabase SDK -->
+	<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+	<script src="js/supabase-config.js"></script>
+
 	<script src="js/swal2.js"></script>
 	<script src="js/session-handler.js"></script>
 </head>
@@ -403,6 +407,17 @@
 						</a>
 					</li>
 					<li class="nav-item">
+						<a href="sessionmanagement.html" class="nav-link">
+							<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+								fill="currentColor">
+								<path
+									d="M12 1a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zm-1 2H5v11h6V3z" />
+								<path d="M8 12a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+							</svg>
+							<span>Session Management</span>
+						</a>
+					</li>
+					<li class="nav-item">
 						<a href="settings.html" class="nav-link">
 							<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
 								fill="currentColor">
@@ -478,12 +493,35 @@
 			</header>
 
 			<div class="home-container">
+				<div class="action-bar"
+					style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+					<div class="search-bar-wrapper">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+							class="search-icon">
+							<circle cx="11" cy="11" r="8"></circle>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+						</svg>
+						<input type="text" placeholder="Search stocks..." class="search-input">
+					</div>
+					<button class="btn-primary" onclick="openStockModal()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<line x1="12" y1="5" x2="12" y2="19"></line>
+							<line x1="5" y1="12" x2="19" y2="12"></line>
+						</svg>
+						Add Item
+					</button>
+				</div>
+
 				<div class="stocks-container glass-panel">
 					<table class="stocks-table">
 						<thead>
 							<tr>
+								<th>Product ID</th>
 								<th>Item Name</th>
 								<th>Category</th>
+								<th>Created At</th>
 								<th>Quantity</th>
 								<th>Unit</th>
 								<th>Status</th>
@@ -492,7 +530,7 @@
 						</thead>
 						<tbody id="stocksList">
 							<tr>
-								<td colspan="6" style="text-align:center; padding: 40px; opacity: 0.5;">
+								<td colspan="8" style="text-align:center; padding: 40px; opacity: 0.5;">
 									No inventory data available.
 								</td>
 							</tr>
@@ -581,6 +619,58 @@
 				<circle cx="5" cy="12" r="1"></circle>
 			</svg>
 		</button>
+	</div>
+
+
+	<!-- Add Item Modal -->
+	<div class="modal-overlay" id="stockModalOverlay">
+		<div class="custom-modal" style="max-width: 500px;">
+			<button class="close-modal-btn" onclick="closeStockModal()">&times;</button>
+			<h2 id="stockModalTitle" style="margin-bottom: 25px; color: #A67B5B;">Add New Item</h2>
+			<form id="stockForm" style="display: grid; gap: 15px;">
+				<div class="form-group">
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Item Name</label>
+					<input type="text" name="itemName" required
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+				</div>
+				<div class="form-group">
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Category</label>
+					<select name="category"
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+						<option value="Coffee">Coffee</option>
+						<option value="Pastries">Pastries</option>
+						<option value="Non-Coffee">Non-Coffee</option>
+						<option value="Merchandise">Merchandise</option>
+					</select>
+				</div>
+				<div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+					<div>
+						<label style="display: block; margin-bottom: 5px; font-weight: 500;">Quantity</label>
+						<input type="number" name="quantity" required min="0"
+							style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+					</div>
+					<div>
+						<label style="display: block; margin-bottom: 5px; font-weight: 500;">Unit</label>
+						<select name="unit"
+							style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
+							<option value="pcs">pcs</option>
+							<option value="kg">kg</option>
+							<option value="g">g</option>
+							<option value="L">L</option>
+							<option value="ml">ml</option>
+						</select>
+					</div>
+				</div>
+
+				<div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px;">
+					<button type="button" class="btn-secondary" onclick="closeStockModal()"
+						style="padding: 10px 20px; border-radius: 50px; border: none; cursor: pointer; background: rgba(0,0,0,0.05);">Cancel</button>
+					<button type="submit" class="btn-primary"
+						style="padding: 10px 20px; border-radius: 50px; border: none; cursor: pointer; background: #A67B5B; color: white;">Add
+						Item</button>
+				</div>
+			</form>
+		</div>
 	</div>
 
 	<!-- Modals -->

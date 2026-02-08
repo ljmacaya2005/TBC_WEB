@@ -1,0 +1,209 @@
+/* Profile Specific Styles */
+.profile-content-padding {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0px;
+    /* for scrollbar gutter */
+}
+
+html {
+    scrollbar-gutter: stable;
+}
+
+body {
+    background-color: var(--bg-color);
+}
+
+/* Main Profile Card */
+.profile-main-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+    background: var(--card-bg);
+    backdrop-filter: blur(60px) saturate(150%);
+    border-radius: 30px;
+}
+
+
+.profile-header-gradient {
+    background: linear-gradient(180deg, rgba(78, 52, 46, 0.9) 0%, rgba(30, 25, 20, 1) 100%);
+    padding: 3rem 1.5rem !important;
+    border-radius: 30px 30px 0 0;
+}
+
+.profile-avatar-large {
+    width: 160px;
+    height: 160px;
+    position: relative;
+}
+
+.profile-avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Glass Card Content */
+.bg-glass-card {
+    background: rgba(var(--card-bg), 0.75);
+    /* fallback */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+    border-radius: 0 0 30px 30px;
+}
+
+.bg-glass-card .list-group-item {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-color);
+}
+
+.icon-shape {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bg-primary-soft {
+    background: rgba(166, 123, 91, 0.15);
+    color: #A67B5B;
+}
+
+.bg-info-soft {
+    background: rgba(210, 180, 140, 0.15);
+    color: #D2B48C;
+}
+
+.smaller {
+    font-size: 0.75rem;
+    color: var(--text-muted, #ccc);
+}
+
+/* Stats Colors */
+#statTasks,
+#statSessions,
+.bg-glass-card .fw-semibold {
+    color: var(--text-color);
+}
+
+/* Tabs Styling */
+.profile-tabs .nav-link {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-color);
+    opacity: 0.6;
+    font-weight: 600;
+    margin: 0 1.5rem 0 0 !important;
+    padding: 1.5rem 0 !important;
+    border-bottom: 3px solid transparent !important;
+    transition: all 0.3s;
+}
+
+.profile-tabs .nav-link:hover {
+    opacity: 1;
+}
+
+.profile-tabs .nav-link.active {
+    opacity: 1;
+    border-bottom-color: #A67B5B !important;
+    color: #A67B5B;
+}
+
+/* Form Styles */
+.form-label {
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.5px;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.05);
+    /* slightly lighter than bg */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    padding: 0.85rem 1.1rem;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    background: rgba(166, 123, 91, 0.05);
+    border-color: #A67B5B;
+    box-shadow: 0 0 0 4px rgba(166, 123, 91, 0.15);
+    color: var(--text-color);
+}
+
+.form-control:disabled {
+    background: rgba(255, 255, 255, 0.02);
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+/* Security Cards */
+.security-action-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.security-action-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(166, 123, 91, 0.3) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.bg-warning-soft {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+}
+
+/* Override home-card for profile usage if needed */
+
+/* Button Overrides */
+.btn-primary {
+    background: linear-gradient(135deg, rgba(78, 52, 46, 0.95), rgba(78, 52, 46, 0.75)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+}
+
+.btn-primary:active,
+.btn-primary:hover,
+.btn-primary:focus {
+    background: linear-gradient(135deg, rgba(93, 64, 55, 0.95), rgba(93, 64, 55, 0.8)) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-glass-danger {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+.btn-glass-danger:hover {
+    background: rgba(220, 53, 69, 0.15);
+    border-color: #dc3545;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+}
+
+.theme-menu {
+    background: rgba(255, 255, 255, 0.9) !important;
+}
+
+.home-card {
+    padding: 0 !important;
+    /* Reset padding for internal layout */
+    overflow: hidden;
+}

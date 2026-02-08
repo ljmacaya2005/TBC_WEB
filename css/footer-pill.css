@@ -120,6 +120,7 @@ body>.glass-pill-footer:hover {
     .glass-pill-footer {
         font-size: 0.75rem;
         padding: 6px 16px;
+
     }
 
     body>.glass-pill-footer {
@@ -127,6 +128,7 @@ body>.glass-pill-footer:hover {
         text-align: center;
         flex-wrap: wrap;
         bottom: 15px;
+
     }
 
     .glass-pill-footer .separator {
