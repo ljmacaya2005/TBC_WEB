@@ -4,12 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>The Brew Cave — Session Management</title>
+    <title>The Brew Cave — Menu Customization</title>
     <link rel="icon" type="image/x-icon" href="assets/icon.png">
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="css/version-island.css">
     <link rel="stylesheet" href="css/landscape-restriction.css">
-    <link rel="stylesheet" href="css/sessionmanagement.css">
+    <link rel="stylesheet" href="css/menucustomization.css">
     <!-- Supabase SDK -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
@@ -33,7 +33,6 @@
 
     // Check if user is logged in
     if (!localStorage.getItem('isLoggedIn')) {
-        // Redirect to login if not authenticated
         localStorage.setItem('showAuthAlert', 'true');
         window.location.href = 'index.html';
     }
@@ -48,7 +47,6 @@
         transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, fill 0.3s ease, stroke 0.3s ease, box-shadow 0.3s ease !important;
     }
 
-    /* Fullscreen toggle helper */
     :fullscreen {
         overflow: auto;
     }
@@ -58,7 +56,6 @@
         position: relative;
     }
 
-    /* Profile Dropdown & Modals */
     .user-profile {
         position: relative;
     }
@@ -123,8 +120,8 @@
     }
 
     .dropdown-item:hover {
-        background: rgba(166, 123, 91, 0.1);
-        color: #A67B5B;
+        background: rgba(112, 102, 224, 0.1);
+        color: #7066e0;
     }
 
     .sign-out-item {
@@ -135,7 +132,6 @@
         background: rgba(231, 76, 60, 0.1) !important;
     }
 
-    /* Modals */
     .modal-overlay {
         position: fixed;
         inset: 0;
@@ -185,7 +181,48 @@
         color: #e74c3c;
     }
 
-    /* Theme Switcher Container Fix */
+    .profile-modal-body {
+        text-align: center;
+    }
+
+    .profile-avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin: 0 auto 25px;
+        overflow: hidden;
+        border: 4px solid #7066e0;
+        padding: 5px;
+    }
+
+    .profile-avatar-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-details {
+        text-align: left;
+        background: rgba(0, 0, 0, 0.02);
+        padding: 20px;
+        border-radius: 15px;
+    }
+
+    .detail-row {
+        margin-bottom: 12px;
+        font-size: 1rem;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding-bottom: 8px;
+    }
+
+    .detail-row:last-child {
+        border: none;
+        margin: 0;
+    }
+
     .theme-menu {
         position: absolute;
         bottom: 100%;
@@ -282,7 +319,7 @@
                             <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
                                 fill="currentColor">
                                 <path fill-rule="evenodd"
-                                    d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z" />
+                                    d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0zm0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z" />
                             </svg>
                             <span>View Orders</span>
                         </a>
@@ -295,15 +332,20 @@
                                     d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.24v7.922l6.5 2.6zM1.496 2.755L8 5.356l6.504-2.601L8 0.156l-6.504 2.599z" />
                             </svg>
                             <span>Stocks</span>
-				</li>
-				<li class="nav-item">
-					<a href="menucustomization.html" class="nav-link">
-						<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-							<path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2z"/>
-							<path d="M5.5 5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm0 1a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM1 7.086a1 1 0 0 0 .293.707L8.75 15.25l-.043.043a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 0 7.586V3a1 1 0 0 1 1-1v5.086z"/>
-						</svg>
-						<span>Menu Customization</span>
-					</a>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="menucustomization.html" class="nav-link active">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                fill="currentColor">
+                                <path
+                                    d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2z" />
+                                <path
+                                    d="M5.5 5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm0 1a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM1 7.086a1 1 0 0 0 .293.707L8.75 15.25l-.043.043a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 0 7.586V3a1 1 0 0 1 1-1v5.086z" />
+                            </svg>
+                            <span>Menu Customization</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="orderhistory.html" class="nav-link">
                             <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
@@ -326,7 +368,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="sessionmanagement.html" class="nav-link active">
+                        <a href="sessionmanagement.html" class="nav-link">
                             <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
                                 fill="currentColor">
                                 <path
@@ -364,8 +406,8 @@
         <main class="home-main-content">
             <header class="home-header">
                 <div class="header-content">
-                    <h1 class="page-title">SESSION MANAGEMENT</h1>
-                    <p class="page-subtitle">Monitor and manage active user sessions</p>
+                    <h1 class="page-title">MENU CUSTOMIZATION</h1>
+                    <p class="page-subtitle">Manage your menu items and ingredients</p>
                 </div>
                 <div class="user-profile header-profile" id="userProfileDropdown">
                     <button class="user-link" id="profileBtn" type="button">
@@ -412,46 +454,88 @@
             </header>
 
             <div class="home-container">
-                <div class="action-bar"
-                    style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                    <div class="search-bar-wrapper">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="search-icon">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <!-- Tab Navigation -->
+                <div class="mc-tabs">
+                    <button class="mc-tab-btn active" data-tab="menu">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
                         </svg>
-                        <input type="text" placeholder="Search sessions..." id="sessionSearch" class="search-input">
-                    </div>
-                    <div class="stats-overview" style="display: flex; gap: 20px;">
-                        <div class="stat-item" style="text-align: right;">
-                            <span style="display: block; font-size: 0.8rem; opacity: 0.7;">Active Sessions</span>
-                            <strong id="activeCount" style="font-size: 1.2rem; color: #A67B5B;">0</strong>
+                        Customize Menu
+                    </button>
+                    <button class="mc-tab-btn" data-tab="ingredients">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                        Customize Ingredients
+                    </button>
+                </div>
+
+                <!-- ═══ TAB 1: Customize Menu ═══ -->
+                <div class="mc-tab-content active" id="tab-menu">
+                    <div class="mc-action-bar">
+                        <div class="mc-search-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="search-icon">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" class="mc-search-input" id="mcMenuSearch"
+                                placeholder="Search menu items...">
                         </div>
+                        <button class="mc-btn-primary" onclick="openAddMenuModal()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add Menu Item
+                        </button>
+                    </div>
+
+                    <div class="mc-menu-grid" id="mcMenuGrid">
+                        <!-- Menu items rendered by JS -->
                     </div>
                 </div>
 
-                <div class="sessions-container glass-panel">
-                    <table class="sessions-table">
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Device / Browser</th>
-                                <th>IP Address</th>
-                                <th>Login Time</th>
-                                <th>Last Active</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sessionsList">
-                            <tr>
-                                <td colspan="7" style="text-align:center; padding: 40px; opacity: 0.5;">
-                                    Loading session data...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- ═══ TAB 2: Customize Ingredients ═══ -->
+                <div class="mc-tab-content" id="tab-ingredients">
+                    <div class="mc-ingredients-section">
+                        <div class="mc-select-wrapper">
+                            <label>Select Menu Item</label>
+                            <select class="mc-select-menu" id="mcIngredientMenuSelect"
+                                onchange="onMenuItemSelect(this)">
+                                <option value="">— Select a menu item —</option>
+                            </select>
+                        </div>
+
+                        <div class="mc-ingredients-panel" id="mcIngredientsPanel" style="display: none;">
+                            <div class="mc-ingredients-header">
+                                <h3 id="mcIngredientsPanelTitle">Ingredients</h3>
+                                <button class="mc-btn-primary" id="mcAddIngredientBtn"
+                                    onclick="openAddIngredientModal()" style="display: none;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Add Ingredient
+                                </button>
+                            </div>
+                            <div class="mc-ingredient-list" id="mcIngredientList">
+                                <!-- Ingredients rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -460,8 +544,7 @@
     <!-- Quick Actions -->
     <div class="home-quick-actions fab-container">
         <div class="fab-items">
-            <!-- Refresh -->
-            <button class="fab-btn" id="fabRefresh" title="Refresh">
+            <button class="fab-btn" id="fabRefresh" title="Refresh" onclick="location.reload()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M23 4v6h-6"></path>
@@ -469,8 +552,6 @@
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
             </button>
-
-            <!-- Fullscreen -->
             <button class="fab-btn" onclick="toggleFullScreen()" title="Fullscreen">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -479,18 +560,12 @@
                     </path>
                 </svg>
             </button>
-
-            <!-- Theme Toggle Wrapper -->
             <div class="theme-btn-wrapper">
-                <button class="fab-btn" id="quick-theme-btn" title="Change Theme">
-                    <!-- Icon set by JS -->
-                </button>
+                <button class="fab-btn" id="quick-theme-btn" title="Change Theme"></button>
                 <ul class="theme-menu" id="fab-theme-menu">
-                    <li>
-                        <button class="dropdown-item" data-theme-value="light">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
+                    <li><button class="dropdown-item" data-theme-value="light"><svg xmlns="http://www.w3.org/2000/svg"
+                                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="5"></circle>
                                 <line x1="12" y1="1" x2="12" y2="3"></line>
                                 <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -500,33 +575,22 @@
                                 <line x1="21" y1="12" x2="23" y2="12"></line>
                                 <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                            </svg> Light
-                        </button>
-                    </li>
-                    <li>
-                        <button class="dropdown-item" data-theme-value="dark">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
+                            </svg> Light</button></li>
+                    <li><button class="dropdown-item" data-theme-value="dark"><svg xmlns="http://www.w3.org/2000/svg"
+                                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                            </svg> Dark
-                        </button>
-                    </li>
-                    <li>
-                        <button class="dropdown-item" data-theme-value="auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
+                            </svg> Dark</button></li>
+                    <li><button class="dropdown-item" data-theme-value="auto"><svg xmlns="http://www.w3.org/2000/svg"
+                                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                                 <line x1="8" y1="21" x2="16" y2="21"></line>
                                 <line x1="12" y1="17" x2="12" y2="21"></line>
-                            </svg> Auto
-                        </button>
-                    </li>
+                            </svg> Auto</button></li>
                 </ul>
             </div>
         </div>
-
         <button id="quick-action-trigger" class="fab-main-btn" type="button" aria-label="Quick Actions">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -537,8 +601,90 @@
         </button>
     </div>
 
+    <!-- Add/Edit Menu Item Modal -->
+    <div class="modal-overlay" id="menuModalOverlay">
+        <div class="custom-modal" style="max-width: 500px;">
+            <button class="close-modal-btn" onclick="closeMenuModal()">&times;</button>
+            <h2 id="menuModalTitle" style="margin-bottom: 25px; color: #A67B5B;">Add Menu Item</h2>
+            <form id="menuForm" onsubmit="handleMenuFormSubmit(event)" style="display: grid; gap: 15px;">
+                <div class="mc-form-group">
+                    <label>Item Name *</label>
+                    <input type="text" id="menuItemName" class="mc-form-input" required placeholder="e.g., Iced Mocha">
+                </div>
+                <div class="mc-form-row">
+                    <div class="mc-form-group">
+                        <label>Price (₱) *</label>
+                        <input type="number" id="menuItemPrice" class="mc-form-input" required min="0" step="0.01"
+                            placeholder="0.00">
+                    </div>
+                    <div class="mc-form-group">
+                        <label>Category</label>
+                        <select id="menuItemCategory" class="mc-form-select">
+                            <option value="coffee">Coffee</option>
+                            <option value="non-coffee">Non-Coffee</option>
+                            <option value="pastries">Pastries</option>
+                            <option value="breakfast">Breakfast</option>
+                            <option value="apparel">Merchandise</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mc-form-group">
+                    <label>Image Path</label>
+                    <input type="text" id="menuItemImage" class="mc-form-input" value="assets/CoffeeBean.png"
+                        oninput="previewMenuImage()">
+                    <img id="menuImgPreview" src="assets/CoffeeBean.png" class="mc-img-preview"
+                        onerror="this.src='https://placehold.co/80/4E342E/FFF?text=?'">
+                </div>
+                <div class="mc-modal-actions">
+                    <button type="button" class="mc-btn-secondary" onclick="closeMenuModal()">Cancel</button>
+                    <button type="submit" class="mc-btn-primary" id="menuModalSubmitBtn">Add Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <!-- Modals -->
+    <!-- Add/Edit Ingredient Modal -->
+    <div class="modal-overlay" id="ingredientModalOverlay">
+        <div class="custom-modal" style="max-width: 450px;">
+            <button class="close-modal-btn" onclick="closeIngredientModal()">&times;</button>
+            <h2 id="ingredientModalTitle" style="margin-bottom: 25px; color: #A67B5B;">Add Ingredient</h2>
+            <form id="ingredientForm" onsubmit="handleIngredientFormSubmit(event)" style="display: grid; gap: 15px;">
+                <div class="mc-form-group">
+                    <label>Ingredient Name *</label>
+                    <input type="text" id="ingredientName" class="mc-form-input" required
+                        placeholder="e.g., Coffee Beans">
+                </div>
+                <div class="mc-form-row">
+                    <div class="mc-form-group">
+                        <label>Quantity *</label>
+                        <input type="number" id="ingredientQty" class="mc-form-input" required min="0.01" step="0.01"
+                            placeholder="0">
+                    </div>
+                    <div class="mc-form-group">
+                        <label>Unit</label>
+                        <select id="ingredientUnit" class="mc-form-select">
+                            <option value="g">g</option>
+                            <option value="mg">mg</option>
+                            <option value="kg">kg</option>
+                            <option value="ml">ml</option>
+                            <option value="L">L</option>
+                            <option value="pcs">pcs</option>
+                            <option value="bags">bags</option>
+                            <option value="shots">shots</option>
+                            <option value="tbsp">tbsp</option>
+                            <option value="cups">cups</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mc-modal-actions">
+                    <button type="button" class="mc-btn-secondary" onclick="closeIngredientModal()">Cancel</button>
+                    <button type="submit" class="mc-btn-primary" id="ingredientModalSubmitBtn">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
     <div class="modal-overlay" id="profileModalOverlay">
         <div class="custom-modal profile-modal">
             <button class="close-modal-btn" onclick="closeAllModals()">&times;</button>
@@ -546,44 +692,26 @@
                 <div class="profile-avatar-large"><img src="https://github.com/mdo.png" alt="User"></div>
                 <div class="profile-details">
                     <div class="detail-row"><strong>Name:</strong> <span class="user-name-display">Admin</span></div>
-                    <div class="detail-row"><strong>Age:</strong> <span>--</span></div>
                     <div class="detail-row"><strong>Position:</strong> <span>Manager</span></div>
-                    <div class="detail-row"><strong>Contact:</strong> <span>+63 9XX XXX XXXX</span></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Actions Modal -->
     <div class="modal-overlay" id="actionsModalOverlay">
         <div class="custom-modal actions-modal">
             <button class="close-modal-btn" onclick="closeAllModals()">&times;</button>
             <h2 style="margin-bottom: 20px; color: #A67B5B;">Recent Actions</h2>
-            <div class="actions-list" id="recentActionsList">
-                <!-- Mocked for consistency -->
-                <div class="action-audit-card">
-                    <div class="audit-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10 9 9 9 8 9"></polyline>
-                        </svg>
-                    </div>
-                    <div class="audit-text">
-                        <strong>Viewed Sessions</strong>
-                        <p>Accessed session management dashboard</p>
-                        <small>Just now</small>
-                    </div>
-                </div>
+            <div class="actions-list">
+                <p style="text-align: center; opacity: 0.5; margin-top: 20px;">No further records found.</p>
             </div>
         </div>
     </div>
 
     <script src="js/color-modes.js" defer></script>
     <script src="js/home.js" defer></script>
-    <script src="js/sessionmanagement.js" defer></script>
+    <script src="js/menucustomization.js" defer></script>
 </body>
 
 </html>

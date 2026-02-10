@@ -1,9 +1,10 @@
 /**
  * THE BREW CAVE - Take Order / POS Logic
+ * Now loads menu items from localStorage and deducts stock on checkout
  */
 
-// --- Data ---
-const products = [
+// ─── Default Products (seed on first load) ───
+const DEFAULT_PRODUCTS = [
     { id: 'c1', name: 'Espresso', price: 110.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
     { id: 'c2', name: 'Americano', price: 120.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
     { id: 'c3', name: 'Cappuccino', price: 140.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
@@ -11,24 +12,35 @@ const products = [
     { id: 'c5', name: 'Mocha', price: 160.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
     { id: 'c6', name: 'Caramel Macchiato', price: 170.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
     { id: 'c7', name: 'Cold Brew', price: 145.00, category: 'coffee', image: 'assets/CoffeeBean.png' },
-
     { id: 'nc1', name: 'Hot Chocolate', price: 130.00, category: 'non-coffee', image: 'assets/CoffeeBean.png' },
     { id: 'nc2', name: 'Matcha Latte', price: 160.00, category: 'non-coffee', image: 'assets/CoffeeBean.png' },
     { id: 'nc3', name: 'Chai Tea', price: 135.00, category: 'non-coffee', image: 'assets/CoffeeBean.png' },
     { id: 'nc4', name: 'Iced Tea', price: 100.00, category: 'non-coffee', image: 'assets/CoffeeBean.png' },
-
     { id: 'p1', name: 'Croissant', price: 95.00, category: 'pastries', image: 'assets/CoffeeBean.png' },
     { id: 'p2', name: 'Choc Croissant', price: 115.00, category: 'pastries', image: 'assets/CoffeeBean.png' },
     { id: 'p3', name: 'Blueberry Muffin', price: 105.00, category: 'pastries', image: 'assets/CoffeeBean.png' },
     { id: 'p4', name: 'Bagel & Cream Cheese', price: 110.00, category: 'pastries', image: 'assets/CoffeeBean.png' },
-
     { id: 'b1', name: 'Breakfast Sandwich', price: 220.00, category: 'breakfast', image: 'assets/CoffeeBean.png' },
     { id: 'b2', name: 'Oatmeal', price: 120.00, category: 'breakfast', image: 'assets/CoffeeBean.png' },
-
     { id: 'm1', name: 'Brew Cave Mug', price: 450.00, category: 'apparel', image: 'assets/CoffeeBean.png' },
     { id: 'm2', name: 'Coffee Beans (1lb)', price: 650.00, category: 'apparel', image: 'assets/CoffeeBean.png' },
 ];
 
+const LS_MENU_KEY = 'brewcave_menu_items';
+const LS_INGREDIENTS_KEY = 'brewcave_menu_ingredients';
+const LS_STOCKS_KEY = 'brewcave_stocks';
+
+// ─── Load products from localStorage ───
+function getProducts() {
+    let items = JSON.parse(localStorage.getItem(LS_MENU_KEY));
+    if (!items || items.length === 0) {
+        items = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+        localStorage.setItem(LS_MENU_KEY, JSON.stringify(items));
+    }
+    return items;
+}
+
+let products = getProducts();
 let cart = [];
 let currentCategory = 'all';
 let searchQuery = '';
@@ -62,6 +74,8 @@ const categoryOptions = document.querySelectorAll('.dropdown-option-premium');
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Refresh products from localStorage every time the page loads
+    products = getProducts();
     renderProducts();
     renderCart();
 
@@ -80,15 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const value = option.dataset.value;
             const text = option.textContent.trim();
 
-            // Update state
             currentCategory = value;
             selectedCategoryName.textContent = text;
 
-            // Update UI classes
             categoryOptions.forEach(opt => opt.classList.remove('active'));
             option.classList.add('active');
 
-            // Close menu and filter
             categoryDropdown.classList.remove('active');
             renderProducts();
         });
@@ -128,12 +139,7 @@ function renderProducts() {
         const card = document.createElement('div');
         card.className = 'product-card animate-fade-in';
         card.onclick = (e) => {
-            // Prevent triggering if clicked logic handled elsewhere, but here whole card adds to cart is fine?
-            // Actually usually clicking the card might open details, bit add btn adds to cart.
-            // Let's make whole card clickable for speed.
-            addToCart(product.id, e); // Pass event
-
-            // Visual feedback - Card Press
+            addToCart(product.id, e);
             card.style.transform = 'scale(0.95)';
             setTimeout(() => card.style.transform = '', 100);
         };
@@ -168,22 +174,14 @@ function addToCart(productId, event) {
     }
     renderCart();
 
-    // Show Toast
     const isMobile = window.innerWidth <= 900;
-
     Toast.fire({
         icon: 'success',
         title: `Added ${product.name}`,
         position: isMobile ? 'bottom' : 'top',
-        customClass: {
-            popup: isMobile ? 'mobile-toast-popup' : ''
-        },
-        showClass: {
-            popup: isMobile ? 'animate-toast-slide-up' : 'swal2-show'
-        },
-        hideClass: {
-            popup: isMobile ? 'swal2-hide' : 'swal2-hide'
-        }
+        customClass: { popup: isMobile ? 'mobile-toast-popup' : '' },
+        showClass: { popup: isMobile ? 'animate-toast-slide-up' : 'swal2-show' },
+        hideClass: { popup: 'swal2-hide' }
     });
 }
 
@@ -290,14 +288,13 @@ function renderCart() {
 
 function updateTotals() {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const tax = subtotal * 0.05; // 5% tax
+    const tax = subtotal * 0.05;
     const total = subtotal + tax;
 
     cartSubtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
     cartTaxEl.textContent = `₱${tax.toFixed(2)}`;
     cartTotalEl.textContent = `₱${total.toFixed(2)}`;
 
-    // Update Mobile Modal Totals
     const mobileSub = document.getElementById('mobileCartSubtotal');
     const mobileTax = document.getElementById('mobileCartTax');
     const mobileTotalDisplay = document.getElementById('mobileCartTotalDisplay');
@@ -306,7 +303,6 @@ function updateTotals() {
     if (mobileTax) mobileTax.textContent = `₱${tax.toFixed(2)}`;
     if (mobileTotalDisplay) mobileTotalDisplay.textContent = `₱${total.toFixed(2)}`;
 
-    // Update Mobile Cart Toggler
     const mobileCountEl = document.getElementById('mobileCartCount');
     const mobileTotalEl = document.getElementById('mobileCartTotal');
     if (mobileCountEl && mobileTotalEl) {
@@ -314,7 +310,6 @@ function updateTotals() {
         mobileCountEl.textContent = totalItems;
         mobileTotalEl.textContent = `₱${total.toFixed(2)}`;
 
-        // Optional: Animate badge
         if (totalItems > 0) {
             mobileCountEl.parentElement.classList.add('bounce');
             setTimeout(() => mobileCountEl.parentElement.classList.remove('bounce'), 300);
@@ -338,28 +333,51 @@ window.toggleCart = () => {
     }
 };
 
-// Close cart when clicking outside (click on overlay)
 document.addEventListener('click', (e) => {
     const mobileModal = document.getElementById('mobileCartModal');
-    // If click target IS the overlay (background), close it
     if (isCartOpen && e.target === mobileModal) {
         window.toggleCart();
     }
 });
 
-// Auto-hide mobile modal when switching to desktop/landscape (> 900px)
 window.addEventListener('resize', () => {
     if (window.innerWidth > 900 && isCartOpen) {
-        // Force close logic without toggling if already open (to avoid accidental re-opening logic if customized)
-        // Re-using toggleCart cleanly if it just flips state, but here we want to force Close.
         isCartOpen = false;
         const mobileModal = document.getElementById('mobileCartModal');
         const togglerText = document.querySelector('.toggler-text');
-
         if (mobileModal) mobileModal.classList.remove('show');
         if (togglerText) togglerText.textContent = "View Cart";
     }
 });
+
+// ─── Stock Deduction on Checkout ───
+function deductStocksForCart() {
+    const ingredientsData = JSON.parse(localStorage.getItem(LS_INGREDIENTS_KEY)) || {};
+    let stocks = JSON.parse(localStorage.getItem(LS_STOCKS_KEY)) || [];
+
+    if (stocks.length === 0) return; // No stocks to deduct from
+
+    cart.forEach(cartItem => {
+        const menuIngredients = ingredientsData[cartItem.id] || [];
+        menuIngredients.forEach(ing => {
+            // Try to find a matching stock item by name (case-insensitive)
+            const stockItem = stocks.find(s =>
+                s.item_name.toLowerCase().includes(ing.name.toLowerCase()) ||
+                ing.name.toLowerCase().includes(s.item_name.toLowerCase())
+            );
+            if (stockItem) {
+                const deduction = ing.quantity * cartItem.qty;
+                stockItem.quantity = Math.max(0, stockItem.quantity - deduction);
+                // Recalculate status
+                if (stockItem.quantity <= 0) stockItem.status = 'Out of Stock';
+                else if (stockItem.quantity <= 10) stockItem.status = 'Low Stock';
+                else stockItem.status = 'In Stock';
+            }
+        });
+    });
+
+    localStorage.setItem(LS_STOCKS_KEY, JSON.stringify(stocks));
+}
 
 window.handleCheckout = () => {
     if (cart.length === 0) {
@@ -373,9 +391,6 @@ window.handleCheckout = () => {
     }
 
     const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0) * 1.05;
-    // Call the modal function exposed in the HTML script or attach listener here
-    // Since we defined openPaymentModal globally in HTML script block, we can call it.
-    // However, best practice is to have it here. For now, assuming it's available.
     if (typeof openPaymentModal === 'function') {
         openPaymentModal('₱' + total.toFixed(2));
     } else {
@@ -384,7 +399,6 @@ window.handleCheckout = () => {
 };
 
 window.processPayment = () => {
-    // Get values
     const customer = document.getElementById('payCustomerName').value || 'Walk-in';
     const amountTendered = parseFloat(document.getElementById('payTendered').value) || 0;
     const totalStr = document.getElementById('payTotal').value.replace(/[^\d.]/g, '');
@@ -400,7 +414,9 @@ window.processPayment = () => {
         return;
     }
 
-    // Success
+    // Deduct stocks based on ingredients
+    deductStocksForCart();
+
     if (typeof closePaymentModal === 'function') closePaymentModal();
 
     Swal.fire({
@@ -412,7 +428,6 @@ window.processPayment = () => {
     }).then(() => {
         cart = [];
         renderCart();
-        // Reset form
         document.getElementById('paymentForm').reset();
     });
 };

@@ -42,7 +42,35 @@ async function fetchUsers() {
 
     } catch (err) {
         console.error('Error fetching users:', err);
-        list.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px; color: red;">Error loading users.</td></tr>`;
+
+        // Build a detailed diagnostic message
+        const errMsg = err.message || 'Unknown error';
+        const errCode = err.code || '';
+        const errHint = err.hint || '';
+        const errDetails = err.details || '';
+
+        // Detect common Supabase issues and provide guidance
+        let diagnosis = '';
+        if (errMsg.includes('permission denied') || errMsg.includes('row-level security') || errCode === '42501') {
+            diagnosis = '🔒 RLS Policy Issue: The "users" table has Row Level Security enabled but no policy allows SELECT access. Go to Supabase Dashboard → Table Editor → users → RLS Policies and add a SELECT policy.';
+        } else if (errMsg.includes('does not exist') || errMsg.includes('relation') || errCode === '42P01') {
+            diagnosis = '❌ Missing Table: The "users" table does not exist in your Supabase database. Create it via the SQL Editor or Table Editor.';
+        } else if (errMsg.includes('JWT') || errMsg.includes('apikey')) {
+            diagnosis = '🔑 Auth Issue: The Supabase API key may be invalid or expired. Check supabase-config.js credentials.';
+        } else if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError')) {
+            diagnosis = '🌐 Network Issue: Cannot reach Supabase. Check your internet connection or if the Supabase project is paused.';
+        } else {
+            diagnosis = '⚠️ Check the browser console (F12) for more details.';
+        }
+
+        list.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px;">
+            <div style="color: #e74c3c; font-weight: 600; margin-bottom: 8px;">Error loading users</div>
+            <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 4px;"><strong>Message:</strong> ${errMsg}</div>
+            ${errCode ? `<div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 4px;"><strong>Code:</strong> ${errCode}</div>` : ''}
+            ${errHint ? `<div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 4px;"><strong>Hint:</strong> ${errHint}</div>` : ''}
+            ${errDetails ? `<div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 4px;"><strong>Details:</strong> ${errDetails}</div>` : ''}
+            <div style="font-size: 0.85rem; margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.04); border-radius: 10px; text-align: left;">${diagnosis}</div>
+        </td></tr>`;
     }
 }
 
