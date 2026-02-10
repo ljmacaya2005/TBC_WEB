@@ -451,7 +451,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     confirmButtonText: 'Yes, Sign Out'
                 }).then(async (result) => {
                     if (result.isConfirmed) {
+                        // 1. Clear Supabase Session
                         await supabase.auth.signOut();
+
+                        // 2. Clear Local Storage Flags (Fixes redirect loop)
+                        localStorage.removeItem('isLoggedIn');
+                        localStorage.removeItem('username');
+                        localStorage.removeItem('role');
+
+                        // 3. Redirect to Login
                         window.location.href = 'index.html';
                     }
                 });

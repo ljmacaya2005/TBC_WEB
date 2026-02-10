@@ -9,52 +9,34 @@ This document outlines the secure authentication flow for changing a user's emai
 - **Action**: The user navigates to the "Security & Privacy" tab in their profile.
 - **Trigger**: The user clicks the "Change Email" button.
 - **Interface**: A secure, high-fidelity modal appears, prompting the user to enter their **New Email Address** and **Confirm New Email Address**.
-- **Validation**: The system performs immediate client-side validation:
-    - Checks if fields are empty.
-    - Validates email format (regex).
-    - Ensures both email fields match data entry.
+- **Validation**: The system performs immediate client-side validation for format and matching fields.
 
 ### 2. Secure Request Transmission
 - **API Call**: Upon confirmation, the application sends a secure request to the Supabase Auth API using the `updateUser` method.
     ```javascript
     await supabase.auth.updateUser({ email: newEmail });
     ```
-- **Security Context**: This request is authenticated using the user's active session token (JWT), ensuring only the logged-in user can request changes to their account.
+- **Security Context**: This request is authenticated using the user's active session token (JWT).
 
-### 3. Verification & Confirmation (The "Double Opt-In")
-- **System Action**: Supabase receives the request. Instead of immediately changing the email, it initiates a **verification process**.
-- **Old Email Notification**: (Optional/Configurable) The system may send a notification to the *old* email address alerting them of the requested change.
-- **New Email Verification**: Supabase sends a secure, time-sensitive **Verification Link** to the **NEW** email address.
-    - **Subject**: "Confirm Your Email Change"
-    - **Content**: Contains a unique, one-time-use secure token.
+### 3. Verification & Confirmation (Double Opt-In)
+- **Email Verification**: Supabase sends a secure, time-sensitive **Verification Link** to the **NEW** email address.
+- **Old Email**: (Optional) A notification may be sent to the old email.
 
-### 4. Finalizing the Change
-- **User Action**: The user must log into their **NEW** email account and click the verification link.
-- **Authentication**: Clicking the link opens the application. Supabase verifies the token.
-- **Completion**: 
-    - If the token is valid, Supabase updates the user's `email` field in the `auth.users` table.
-    - The `email_confirmed_at` timestamp is updated.
-    - The user is effectively logged in with the new email address.
-    - Future logins **MUST** use the new email address.
+### 4. Finalizing the Change (Fresh Device Support)
+- **User Action**: The user clicks the verification link in their email.
+- **Handling**: The link directs to `auth-callback.html`.
+- **Logic**:
+    - The `auth-callback.html` page processes the `access_token` or `error` from the URL hash.
+    - **Fresh Devices**: This page is exempt from strict session checks, allowing users to verify their email even on a device where they are not currently logged in.
+    - **Success**: If verification succeeds, the user's session is established (or recovered), and they are redirected to their Profile page.
+    - **Local State**: The system automatically updates local session flags to ensure a seamless experience.
 
-## Technical Implementation Details
-
-### Client-Side Code (`js/profile.js`)
-The implementation uses `SweetAlert2` for a professional, interrupted workflow that prevents accidental submissions.
-
-**Key Logic:**
-1.  **Input capture**: Securely captures user input via modal.
-2.  **Pre-flight check**: Validates inputs locally to reduce API load.
-3.  **Async Execution**: Calls `supabase.auth.updateUser` asynchronously.
-4.  **Feedback**: Provides immediate visual feedback (success/error states) to the user.
-
-### Security Best Practices Implemented
-- **Session Validation**: The action is blocked if no valid session exists.
-- **Input Sanitization**: Inputs are treated as strings and validated against strict email patterns.
-- **Confirmation Step**: Requiring the email twice prevents typos (e.g., locking a user out due to `user@gmil.com`).
-- **Visual Feedback**: Loading states prevent double-submission.
+## User Experience Improvements
+- **No Login-Wall**: Users do not need to log in again just to verify their email, reducing friction.
+- **Clear Feedback**: The callback page provides clear visual indicators of "Verifying...", "Success", or "Failed".
+- **Auto-Redirect**: On success, the user is automatically taken to their updated profile.
 
 ## Troubleshooting
-- **"I didn't receive the email"**: Check the Spam/Junk folder of the **NEW** email address.
-- **"Link Expired"**: Verification links have an expiration time (usually 24 hours). If expired, the user must request the change again.
-- **"Old Email Still Works"**: The email change is **NOT** final until the link in the new email is clicked. Until then, the old email remains the valid login credential.
+- **"I didn't receive the email"**: Check Spam/Junk folders.
+- **"Link Expired"**: Verification links expire (usually 24h). Request the change again if needed.
+- **"Redirect Loop"**: This has been resolved by ensuring the sign-out process clears all local browser session flags.

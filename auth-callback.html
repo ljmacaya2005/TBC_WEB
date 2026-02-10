@@ -186,6 +186,12 @@
                 if (sessionError) throw sessionError;
 
                 // Success!
+                if (session) {
+                    localStorage.setItem('isLoggedIn', 'true');
+                    if (session.user && session.user.email) {
+                        localStorage.setItem('username', session.user.email.split('@')[0]);
+                    }
+                }
                 spinner.style.display = 'none';
                 successIcon.style.display = 'block';
                 statusTitle.textContent = 'Email Verified Successfully! ✓';

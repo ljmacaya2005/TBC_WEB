@@ -9,6 +9,8 @@
     // --- 1. Session Verification Logic (Supabase + LocalStorage Fallback) ---
     const path = window.location.pathname;
     const isLoginPage = path.endsWith('index.html') || path.endsWith('/') || path.endsWith('Work/') || path.endsWith('WORK/');
+    const isCallbackPage = path.endsWith('auth-callback.html'); // Exception for auth verification
+
 
     // Hide body immediately
     const style = document.createElement('style');
@@ -45,6 +47,12 @@
     }
 
     function handleRedirect(isLoggedIn) {
+        // Allow callback page to process without interruption
+        if (isCallbackPage) {
+            showBody();
+            return;
+        }
+
         if (!isLoginPage) {
             // Protected Page
             if (!isLoggedIn) {

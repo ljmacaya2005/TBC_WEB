@@ -130,14 +130,20 @@
         cancelButtonColor: '#6e7881',
         confirmButtonText: 'Yes, Sign Out',
         cancelButtonText: 'Cancel'
-      }).then((result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
-          // Clear login state and theme from localStorage
+          // 1. Clear Supabase Session (Critical to prevent auto-login loop)
+          if (window.sb) {
+            await window.sb.auth.signOut();
+          }
+
+          // 2. Clear login state from localStorage
           localStorage.removeItem('isLoggedIn');
           localStorage.removeItem('username');
+          localStorage.removeItem('role');
           localStorage.removeItem('theme');
 
-          // Show success message and redirect
+          // 3. Show success message and redirect
           Swal.fire({
             title: 'Signed Out',
             text: 'Redirecting to login page...',
