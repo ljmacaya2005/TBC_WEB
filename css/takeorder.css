@@ -106,6 +106,8 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .dropdown-trigger-premium:hover {
@@ -129,20 +131,23 @@
     top: calc(100% + 8px);
     left: 0;
     width: 100%;
-    background: var(--card-bg);
-    backdrop-filter: blur(25px) saturate(200%);
-    -webkit-backdrop-filter: blur(25px) saturate(200%);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    padding: 6px;
+    /* Stronger background tint to verify surface presence */
+    background: rgba(166, 123, 91, 0.9);
+    /* Standard iOS-style blur radius - distinct but frosted */
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    padding: 8px;
     display: none;
     flex-direction: column;
     gap: 4px;
-    animation: dropdownPop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    animation: dropdownPop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     transform-origin: top center;
-    z-index: 1200;
-    /* Topmost layer */
+    z-index: 9999;
 }
 
 @keyframes dropdownPop {
@@ -173,6 +178,8 @@
     transition: all 0.2s ease;
     color: var(--text-color);
     opacity: 0.8;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .dropdown-option-premium svg {

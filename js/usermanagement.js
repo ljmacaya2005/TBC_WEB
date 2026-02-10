@@ -1,16 +1,53 @@
-// User Management - Dummy Data and Logic
+// User Management Logic
 
-const users = [
-    { name: 'Admin User', age: 30, position: 'Manager', contact: '+63 900 123 4567', username: 'admin', role: 'Admin', status: 'Active', avatar: 'https://github.com/mdo.png' },
-    { name: 'John Barista', age: 24, position: 'Staff', contact: '+63 900 987 6543', username: 'johnb', role: 'Staff', status: 'Active', avatar: 'https://placehold.co/100x100/A67B5B/FFF?text=J' },
-    { name: 'Jane Cashier', age: 22, position: 'Staff', contact: '+63 900 555 4444', username: 'janec', role: 'Staff', status: 'Inactive', avatar: 'https://placehold.co/100x100/4E342E/FFF?text=J' },
-];
+// Global State
+let allUsers = [];
+let isEditMode = false;
+let currentEditId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    renderUsers();
+    fetchUsers();
+
+    // Attach form submit listener
+    const form = document.getElementById('userForm');
+    if (form) {
+        form.addEventListener('submit', handleUserFormSubmit);
+    }
 });
 
-function renderUsers() {
+// --- Fetch Users ---
+async function fetchUsers() {
+    const list = document.getElementById('usersList');
+    if (!list) return;
+
+    // Show loading state
+    list.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px;">Loading users...</td></tr>`;
+
+    if (!window.sb) {
+        // Retry if SB not ready
+        setTimeout(fetchUsers, 500);
+        return;
+    }
+
+    try {
+        const { data, error } = await window.sb
+            .from('users')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        allUsers = data || [];
+        renderUsers(allUsers);
+
+    } catch (err) {
+        console.error('Error fetching users:', err);
+        list.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px; color: red;">Error loading users.</td></tr>`;
+    }
+}
+
+// --- Render Users ---
+function renderUsers(users) {
     const list = document.getElementById('usersList');
     if (!list) return;
 
@@ -19,28 +56,177 @@ function renderUsers() {
         return;
     }
 
-    list.innerHTML = users.map(user => `
+    list.innerHTML = users.map(user => {
+        // Fallbacks
+        const name = user.first_name ? `${user.first_name} ${user.last_name || ''}` : (user.name || 'Unknown'); // Handle schema variations
+        const email = user.email || 'N/A';
+        const role = user.role || 'Staff';
+        const status = user.status || 'Active'; // Assume Active if missing
+
+        // Avatar logic
+        let avatarUrl = user.avatar_url;
+        if (!avatarUrl) {
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=A67B5B&color=fff`;
+        }
+
+        const statusClass = status.toLowerCase() === 'active' ? 'status-active' : 'status-inactive';
+
+        return `
         <tr class="animate-fade-in">
-            <td><div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden;"><img src="${user.avatar}" style="width: 100%; height: 100%; object-fit: cover;"></div></td>
-            <td style="font-weight: 600;">${user.name}</td>
-            <td>${user.age}</td>
-            <td>${user.position}</td>
-            <td>${user.contact}</td>
-            <td>${user.username}</td>
-            <td><span class="status-badge status-${user.status.toLowerCase()}">${user.status}</span></td>
             <td>
-                <button class="btn-icon" title="Edit" onclick="editUser('${user.username}')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                </button>
-                <button class="btn-icon" title="Delete" onclick="deleteUser('${user.username}')" style="color: #e74c3c;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                </button>
+                <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid #ddd;">
+                    <img src="${avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://github.com/mdo.png'">
+                </div>
+            </td>
+            <td style="font-weight: 600;">${name}</td>
+            <td>${user.age || '--'}</td>
+            <td>${role}</td>
+            <td>${user.contact_number || user.contact || '--'}</td>
+            <td>${email}</td>
+            <td><span class="status-badge ${statusClass}">${status}</span></td>
+            <td>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn-edit" onclick="editUser('${user.id}')" title="Edit">
+                        Edit
+                    </button>
+                    <button class="btn-delete" onclick="deleteUser('${user.id}')" title="Delete">
+                        Delete
+                    </button>
+                </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
+// --- Form Handling ---
+async function handleUserFormSubmit(e) {
+    e.preventDefault();
+
+    // Get Form Data
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    // Basic Validation
+    if (data.password && data.password !== data.confirmPassword) {
+        Swal.fire('Error', 'Passwords do not match', 'error');
+        return;
+    }
+
+    try {
+        Swal.fire({
+            title: isEditMode ? 'Updating...' : 'Creating...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        // 1. Prepare User Data for DB
+        // Determine name splitting if using single "Name" field
+        const nameParts = data.name.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        const dbPayload = {
+            first_name: firstName,
+            last_name: lastName,
+            // Fallback for schema variations if columns exist or not. 
+            // Better to assume a schema. I'll stick to what seemed standard:
+            // name, age, role, contact, email, status
+            // BUT session-handler used first_name, last_name. I will try to save BOTH or adapt.
+            // Let's save flattened 'name' too if the column exists, but usually normalized is better.
+            // I'll try to save `name` as well just in case.
+            name: data.name,
+            age: data.age ? parseInt(data.age) : null,
+            role: data.role,
+            contact_number: data.contact, // standardize to contact_number
+            contact: data.contact,        // and contact just in case
+            email: data.email,
+            status: 'Active',             // Default for new users
+            updated_at: new Date()
+        };
+
+        if (isEditMode && currentEditId) {
+            // --- UPDATE EXISTING USER ---
+            const { error } = await window.sb
+                .from('users')
+                .update(dbPayload)
+                .eq('id', currentEditId);
+
+            if (error) throw error;
+
+            Swal.fire('Success', 'User updated successfully', 'success');
+
+        } else {
+            // --- CREATE NEW USER ---
+            // 1. Create Auth User (requires workaround logic)
+            // Use temporary client to avoid logging out admin
+            // Ensure SUPABASE_URL and SUPABASE_ANON_KEY are available
+            if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
+                throw new Error("Supabase config missing");
+            }
+
+            const tempClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const { data: authData, error: authError } = await tempClient.auth.signUp({
+                email: data.email,
+                password: data.password || 'password123', // Default password if missing
+                options: {
+                    data: {
+                        first_name: firstName,
+                        last_name: lastName,
+                        role: data.role
+                    }
+                }
+            });
+
+            if (authError) throw authError;
+
+            if (authData.user) {
+                // 2. Insert into public users table
+                // We use tempClient because RLS might only allow Users to insert their OWN row.
+                // Or if RLS allows authenticated users to insert, tempClient works.
+
+                const userId = authData.user.id;
+                dbPayload.id = userId;
+                // Created_at
+                dbPayload.created_at = new Date();
+
+                const { error: dbError } = await tempClient
+                    .from('users')
+                    .insert(dbPayload);
+
+                if (dbError) {
+                    console.error("DB Insert Error (Temp Client):", dbError);
+                    // Fallback: Try with Admin client (window.sb) if Temp Client failed (maybe RLS blocks insert?)
+                    const { error: dbError2 } = await window.sb
+                        .from('users')
+                        .insert(dbPayload);
+
+                    if (dbError2) throw dbError2;
+                }
+            }
+
+            Swal.fire('Success', 'User created successfully', 'success');
+        }
+
+        closeUserModal();
+        fetchUsers(); // Refresh table
+
+    } catch (err) {
+        console.error("Operation Error:", err);
+        Swal.fire('Error', err.message || 'An error occurred', 'error');
+    }
+}
+
+// --- Helper Functions ---
+
 window.openUserModal = () => {
+    isEditMode = false;
+    currentEditId = null;
+    document.getElementById('userModalTitle').innerText = 'Create User Profile';
+    const form = document.getElementById('userForm');
+    form.reset();
+    form.email.readOnly = false; // Enable email for new users
     document.getElementById('userModalOverlay').classList.add('show');
 };
 
@@ -48,24 +234,56 @@ window.closeUserModal = () => {
     document.getElementById('userModalOverlay').classList.remove('show');
 };
 
-window.editUser = (username) => {
-    // Logic to populate form
+window.editUser = (id) => {
+    const user = allUsers.find(u => u.id === id);
+    if (!user) return;
+
+    isEditMode = true;
+    currentEditId = id;
+
+    // Populate Form
+    const form = document.getElementById('userForm');
+    const name = user.name || (user.first_name + ' ' + user.last_name).trim();
+
+    form.name.value = name;
+    form.age.value = user.age || '';
+    form.role.value = user.role || 'Staff';
+    form.contact.value = user.contact_number || user.contact || '';
+    form.email.value = user.email || '';
+    form.email.readOnly = true; // Disable email editing
+
+    // Password fields left blank
+    form.password.value = '';
+    form.confirmPassword.value = '';
+
     document.getElementById('userModalTitle').innerText = 'Edit User Profile';
-    window.openUserModal();
+    document.getElementById('userModalOverlay').classList.add('show');
 };
 
-window.deleteUser = (username) => {
+window.deleteUser = (id) => {
     Swal.fire({
         title: 'Delete User?',
-        text: `Are you sure you want to delete ${username}?`,
+        text: "This action cannot be undone.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e74c3c',
         cancelButtonColor: '#6e7881',
         confirmButtonText: 'Yes, Delete'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            Swal.fire('Deleted', 'User account removed.', 'success');
+            try {
+                const { error } = await window.sb
+                    .from('users')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                Swal.fire('Deleted', 'User has been removed.', 'success');
+                fetchUsers();
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
         }
     });
 };

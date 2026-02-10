@@ -565,6 +565,8 @@ body {
 	background-color: var(--bg-color);
 	color: var(--text-color);
 	transition: background-color 0.3s ease, color 0.3s ease;
+	user-select: none;
+	-webkit-user-select: none;
 }
 
 /* Dashboard Layout */
@@ -679,7 +681,7 @@ body {
 }
 
 .header-profile .user-link {
-	padding: 8px 12px;
+	padding: 6px 16px;
 	background: rgba(255, 255, 255, 0.1);
 	border: 1px solid var(--glass-border);
 	backdrop-filter: blur(10px);
@@ -689,10 +691,10 @@ body {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 10px 15px;
+	padding: 6px 16px;
 	color: var(--sidebar-text);
 	text-decoration: none;
-	border-radius: 6px;
+	border-radius: 50px;
 	transition: background-color 0.2s ease, color 0.3s ease;
 }
 
@@ -787,25 +789,7 @@ body {
 	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
-.header-content {
-	display: flex;
-	flex-direction: column;
-	gap: 5px;
-}
-
-.page-title {
-	margin: 0;
-	font-size: 28px;
-	font-weight: 700;
-	color: var(--brand-color);
-	transition: color 0.3s ease;
-}
-
-.page-subtitle {
-	margin: 0;
-	font-size: 14px;
-	opacity: 0.7;
-}
+/* Header content styles removed to align with home.css */
 
 .header-actions {
 	display: flex;
@@ -1275,16 +1259,7 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 		width: 100%;
 	}
 
-	.page-title {
-		font-size: 18px;
-		margin: 0;
-		font-weight: 700;
-	}
 
-	.page-subtitle {
-		font-size: 12px;
-		opacity: 0.8;
-	}
 
 	.dashboard-container {
 		padding: 12px;
@@ -1412,16 +1387,7 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 		width: 100%;
 	}
 
-	.page-title {
-		font-size: 20px;
-		margin: 0;
-		font-weight: 700;
-	}
 
-	.page-subtitle {
-		font-size: 12px;
-		opacity: 0.8;
-	}
 
 	.dashboard-container {
 		padding: 15px;
@@ -1519,13 +1485,7 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 		gap: 12px;
 	}
 
-	.page-title {
-		font-size: 26px;
-	}
 
-	.page-subtitle {
-		font-size: 13px;
-	}
 
 	.dashboard-container {
 		padding: 20px;
@@ -1557,9 +1517,7 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 		padding: 25px;
 	}
 
-	.page-title {
-		font-size: 28px;
-	}
+
 
 	.dashboard-container {
 		padding: 25px;
@@ -1577,9 +1535,7 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 		padding: 30px;
 	}
 
-	.page-title {
-		font-size: 32px;
-	}
+
 
 	.dashboard-container {
 		padding: 30px;

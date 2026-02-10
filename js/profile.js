@@ -215,77 +215,110 @@ document.addEventListener('DOMContentLoaded', async () => {
         const changeEmailBtn = document.getElementById('changeEmailBtn');
         if (changeEmailBtn) {
             changeEmailBtn.addEventListener('click', async () => {
-                const { value: newEmail, isDismissed } = await Swal.fire({
-                    title: '✉️ Change Email Address',
+                const { value: formValues, isDismissed } = await Swal.fire({
+                    title: '✉️ Update Email Address',
                     html: `
                         <div style="text-align: left; margin-bottom: 20px;">
-                            <p style="color: #666; margin-bottom: 15px;">Enter your new email address. You'll need to verify it before the change takes effect.</p>
-                            <input type="email" id="newEmail" class="swal2-input" placeholder="new.email@example.com" style="width: 100%; margin: 0;">
+                            <p style="color: #666; margin-bottom: 20px; font-size: 0.95em;">
+                                Please enter your new email address. For security, you will need to verify this change via a confirmation link sent to the new address.
+                            </p>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 6px; color: #333; font-weight: 600; font-size: 0.9em;">New Email Address</label>
+                                <input type="email" id="newEmail" class="swal2-input" placeholder="e.g. name@example.com" style="width: 100%; margin: 0;">
+                            </div>
+
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; margin-bottom: 6px; color: #333; font-weight: 600; font-size: 0.9em;">Confirm New Email</label>
+                                <input type="email" id="confirmNewEmail" class="swal2-input" placeholder="Re-enter new email address" style="width: 100%; margin: 0;">
+                            </div>
                         </div>
                     `,
                     showCancelButton: true,
-                    confirmButtonText: 'Send Verification',
+                    confirmButtonText: 'Send Verification Link',
                     cancelButtonText: 'Cancel',
                     confirmButtonColor: '#A67B5B',
                     cancelButtonColor: '#6c757d',
-                    allowOutsideClick: true,
+                    allowOutsideClick: false,
                     allowEscapeKey: true,
                     focusConfirm: false,
                     preConfirm: () => {
-                        const email = document.getElementById('newEmail').value;
-                        if (!email) {
-                            Swal.showValidationMessage('Please enter an email address');
+                        const newEmail = document.getElementById('newEmail').value;
+                        const confirmNewEmail = document.getElementById('confirmNewEmail').value;
+
+                        if (!newEmail || !confirmNewEmail) {
+                            Swal.showValidationMessage('Please fill in both email fields');
                             return false;
                         }
-                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(newEmail)) {
                             Swal.showValidationMessage('Please enter a valid email address');
                             return false;
                         }
-                        return email;
+
+                        if (newEmail !== confirmNewEmail) {
+                            Swal.showValidationMessage('Email addresses do not match');
+                            return false;
+                        }
+
+                        // Prevent using same email
+                        if (newEmail === user.email) {
+                            Swal.showValidationMessage('New email must be different from current email');
+                            return false;
+                        }
+
+                        return { email: newEmail };
                     },
                     customClass: {
                         popup: 'animated-modal'
                     },
                     didClose: () => {
-                        // Cleanup on close
                         document.body.classList.remove('swal2-shown', 'swal2-height-auto');
                     }
                 });
 
                 // Only proceed if not dismissed/cancelled
-                if (newEmail && !isDismissed) {
+                if (formValues && !isDismissed) {
                     Swal.fire({
-                        title: 'Processing...',
-                        html: 'Sending verification email',
+                        title: 'Processing Request...',
+                        html: 'Initiating secure email change protocol',
                         allowOutsideClick: false,
                         didOpen: () => Swal.showLoading()
                     });
 
                     try {
-                        const { error } = await supabase.auth.updateUser({ email: newEmail });
+                        const { error } = await supabase.auth.updateUser({ email: formValues.email });
 
                         if (error) throw error;
 
                         await Swal.fire({
                             icon: 'success',
-                            title: 'Verification Email Sent! 📧',
+                            title: 'Verification Link Sent! 📧',
                             html: `
-                                <p style="color: #666; margin-top: 10px;">
-                                    We've sent a verification link to:<br>
-                                    <strong style="color: #A67B5B;">${newEmail}</strong>
-                                </p>
-                                <p style="color: #999; font-size: 0.9em; margin-top: 15px;">
-                                    Please check your inbox and click the verification link to complete the email change.
-                                </p>
+                                <div style="text-align: left; padding: 10px;">
+                                    <p style="color: #444; margin-bottom: 15px; font-size: 1.05em;">
+                                        We've sent a secure verification link to:
+                                    </p>
+                                    <div style="background: rgba(166, 123, 91, 0.1); padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+                                        <strong style="color: #A67B5B; font-size: 1.1em;">${formValues.email}</strong>
+                                    </div>
+                                    <p style="color: #666; font-size: 0.9em; margin: 0;">
+                                        <strong>Next Steps:</strong><br>
+                                        1. Check your inbox for the verification email.<br>
+                                        2. Click the link to confirm the change.<br>
+                                        3. Your old email will remain active until verified.
+                                    </p>
+                                </div>
                             `,
                             confirmButtonColor: '#A67B5B',
-                            confirmButtonText: 'Got it!'
+                            confirmButtonText: 'Understood'
                         });
                     } catch (error) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Update Failed',
-                            text: error.message || 'Could not update email address',
+                            title: 'Request Failed',
+                            text: error.message || 'Could not initiate email change. Please try again.',
                             confirmButtonColor: '#d33'
                         });
                     }

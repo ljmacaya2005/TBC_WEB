@@ -521,9 +521,9 @@
 								<th>Profile</th>
 								<th>Name</th>
 								<th>Age</th>
-								<th>Position</th>
+								<th>Role</th>
 								<th>Contact</th>
-								<th>Username</th>
+								<th>Email</th>
 								<th>Status</th>
 								<th>Actions</th>
 							</tr>
@@ -640,19 +640,20 @@
 					</div>
 				</div>
 
+				<input type="hidden" name="id">
 				<div class="form-group">
 					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Name</label>
-					<input type="text" name="name" required
+					<input type="text" name="name" required placeholder="Full Name"
 						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
 				</div>
 				<div class="form-group">
 					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Age</label>
-					<input type="number" name="age"
+					<input type="number" name="age" placeholder="Age"
 						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
 				</div>
 				<div class="form-group">
-					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Position</label>
-					<select name="position"
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Role</label>
+					<select name="role"
 						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
 						<option value="Staff">Staff</option>
 						<option value="Manager">Manager</option>
@@ -661,22 +662,22 @@
 				</div>
 				<div class="form-group">
 					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Contact Number</label>
-					<input type="tel" name="contact"
+					<input type="tel" name="contact" placeholder="+63 9XX XXX XXXX"
 						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
 				</div>
 				<div class="form-group">
-					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Username</label>
-					<input type="text" name="username" required
+					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Email</label>
+					<input type="email" name="email" required placeholder="name@example.com"
 						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
 				</div>
 				<div class="form-group">
 					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Password</label>
-					<input type="password" name="password"
+					<input type="password" name="password" placeholder="••••••••"
 						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
 				</div>
 				<div class="form-group">
 					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Confirm Password</label>
-					<input type="password" name="confirmPassword"
+					<input type="password" name="confirmPassword" placeholder="••••••••"
 						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
 				</div>
 

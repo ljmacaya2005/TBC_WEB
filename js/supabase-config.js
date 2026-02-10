@@ -2,9 +2,11 @@
 // Supabase Configuration
 // Project ID extracted from your screenshot: hvkexhuqlwahcteujpqm
 const SUPABASE_URL = 'https://hvkexhuqlwahcteujpqm.supabase.co';
+window.SUPABASE_URL = SUPABASE_URL;
 
 // Anon Key (Pasted from history)
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2a2V4aHVxbHdhaGN0ZXVqcHFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NDM4MzEsImV4cCI6MjA4NjExOTgzMX0.GGQd8N-GS7swf078lCVaLzLmDfFlS_ZxyES4PdYuKGI';
+window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
 
 // Make sure we wait for the supabase global if it's not ready yet
 window.sb = null;
