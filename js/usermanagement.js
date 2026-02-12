@@ -301,46 +301,35 @@
         try {
             Swal.fire({
                 title: userId ? 'Updating Profile...' : 'Creating User...',
+                text: 'Connecting to system...',
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
 
             if (userId) {
                 // --- UPDATE EXISTING USER ---
-
-                // 1. Update Profiles Table
                 const { error: profileError } = await window.sb
                     .from('profiles')
                     .update({
                         first_name: fName,
                         last_name: lName,
                         contact_num: contact,
-                        email: email // Note: Does not change Auth email, only profile
+                        email: email
                     })
                     .eq('user_id', userId);
 
                 if (profileError) throw profileError;
 
-                // 2. Update Role in Users Table
                 const role = allRoles.find(r => r.role_name === roleName);
                 if (role) {
-                    const { error: userError } = await window.sb
-                        .from('users')
-                        .update({ role_id: role.role_id })
-                        .eq('user_id', userId);
-                    if (userError) throw userError;
+                    await window.sb.from('users').update({ role_id: role.role_id }).eq('user_id', userId);
                 }
 
-                Swal.fire({
-                    title: 'Profile Updated!',
-                    text: 'User information has been successfully modified.',
-                    icon: 'success',
-                    confirmButtonColor: '#A67B5B'
-                });
+                Swal.fire('Success', 'Profile updated successfully', 'success');
             } else {
                 // --- CREATE NEW USER ---
 
-                // 1. Auth SignUp
+                // Try Auth Creation
                 const { data: authData, error: authError } = await window.sb.auth.signUp({
                     email: email,
                     password: password,
@@ -352,41 +341,38 @@
                     }
                 });
 
-                if (authError) throw authError;
+                if (authError) {
+                    // Check specifically for rate limits
+                    if (authError.message.toLowerCase().includes('rate') || authError.status === 429) {
+                        throw new Error("Supabase Email Rate Limit Exceeded. To add users directly WITHOUT sending emails, please DISABLE 'Confirm Email' in your Supabase Auth Settings (Dashboard).");
+                    }
+                    throw authError;
+                }
 
                 const newUser = authData.user;
-                if (!newUser) throw new Error("Authentication failed to generate a user ID.");
+                if (!newUser) throw new Error("Auth user creation failed.");
 
-                // 2. Link Role & Create Metadata (Handled by triggers usually, but we ensure here)
+                // Link Role & Metadata
                 const role = allRoles.find(r => r.role_name === roleName);
                 if (role) {
-                    // Check if users row exists
-                    const { data: userRow } = await window.sb.from('users').select('*').eq('user_id', newUser.id).maybeSingle();
-                    if (!userRow) {
-                        await window.sb.from('users').insert({
-                            user_id: newUser.id,
-                            role_id: role.role_id
-                        });
-                    } else {
-                        await window.sb.from('users').update({ role_id: role.role_id }).eq('user_id', newUser.id);
-                    }
+                    await window.sb.from('users').upsert({
+                        user_id: newUser.id,
+                        role_id: role.role_id,
+                        is_active: true
+                    }, { onConflict: 'user_id' });
 
-                    // Check if profile exists
-                    const { data: profileRow } = await window.sb.from('profiles').select('*').eq('user_id', newUser.id).maybeSingle();
-                    if (!profileRow) {
-                        await window.sb.from('profiles').insert({
-                            user_id: newUser.id,
-                            first_name: fName,
-                            last_name: lName,
-                            email: email,
-                            contact_num: contact
-                        });
-                    }
+                    await window.sb.from('profiles').upsert({
+                        user_id: newUser.id,
+                        first_name: fName,
+                        last_name: lName,
+                        email: email,
+                        contact_num: contact
+                    }, { onConflict: 'user_id' });
                 }
 
                 Swal.fire({
                     title: 'User Created!',
-                    text: 'A verification email has been sent to the new user.',
+                    text: 'The new account is ready. Note: If email confirmation is ON, they must still verify to log in.',
                     icon: 'success',
                     confirmButtonColor: '#A67B5B'
                 });
@@ -398,7 +384,10 @@
             console.error("User Submit Error:", err);
             Swal.fire({
                 title: 'Operation Failed',
-                text: err.message || 'An unexpected error occurred.',
+                html: `<div style="text-align: left; font-size: 0.9rem;">
+                        <p><strong>Reason:</strong> ${err.message}</p>
+                        <p style="margin-top: 10px; color: #dc3741;"><strong>Tip:</strong> To bypass email limits, go to your Supabase Dashboard and disable <b>Confirm Email</b> in Auth Settings.</p>
+                       </div>`,
                 icon: 'error',
                 confirmButtonColor: '#dc3741'
             });
