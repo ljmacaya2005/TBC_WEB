@@ -192,7 +192,100 @@
       document.querySelectorAll('.user-name-display').forEach(el => el.textContent = username);
     }
 
-    // Carousel Drag-to-Scroll Logic
+    // --- Supabase Order Integration ---
+    async function loadPriorityOrders() {
+      const carousel = document.getElementById('priorityCarousel');
+      if (!carousel) return;
+
+      try {
+        if (!window.sb) {
+          console.warn("Supabase not ready for orders, retrying...");
+          setTimeout(loadPriorityOrders, 1000);
+          return;
+        }
+
+        // Fetch pending orders with items
+        const { data: orders, error } = await window.sb
+          .from('orders')
+          .select(`
+            *,
+            order_items (
+              *,
+              menu_items (product_name)
+            )
+          `)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (!orders || orders.length === 0) {
+          carousel.innerHTML = `<div style="text-align: center; width: 100%; opacity: 0.5; padding: 40px;">No pending orders.</div>`;
+          return;
+        }
+
+        let html = '';
+        orders.forEach((order, index) => {
+          const priorityLabels = ['FIRST PRIORITY', 'SECOND PRIORITY', 'THIRD PRIORITY'];
+          const priorityClasses = ['', 'warning-badge', 'success-badge'];
+
+          const label = index < 3 ? priorityLabels[index] : 'LOW PRIORITY';
+          const pClass = index < 3 ? priorityClasses[index] : '';
+
+          const customerMatch = order.notes?.match(/Customer: (.*)/);
+          const customerName = customerMatch ? customerMatch[1] : 'Walk-in';
+          const avatar = customerName.charAt(0).toUpperCase();
+
+          // Relative time logic
+          const diff = Math.floor((new Date() - new Date(order.created_at)) / 60000);
+          const timeStr = diff <= 0 ? 'Just now' : `${diff} mins ago`;
+
+          const itemsHtml = order.order_items.map(item => `
+            <li><span>${item.quantity}x ${item.menu_items?.product_name || 'Item'}</span> <strong>₱${(item.price_at_time * item.quantity).toFixed(2)}</strong></li>
+          `).join('');
+
+          html += `
+            <section class="priority-order-card slide-in-bottom" style="animation-delay: ${index * 0.1}s">
+              <div class="priority-header">
+                <span class="priority-badge ${pClass}">${label}</span>
+                <span class="order-id">${order.order_code}</span>
+              </div>
+              <div class="priority-body">
+                <div class="customer-info">
+                  <div class="customer-avatar">${avatar}</div>
+                  <div class="customer-details">
+                    <p><strong>${customerName}</strong></p>
+                    <span class="order-time">${timeStr}</span>
+                  </div>
+                </div>
+                <div class="order-preview">
+                  <ul>${itemsHtml}</ul>
+                </div>
+              </div>
+              <div class="btn-group">
+                <button class="btn-action btn-done" onclick="handleCompleteOrder('${order.order_id}')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg> Done
+                </button>
+                <button class="btn-action btn-cancel" onclick="handleCancelOrder('${order.order_id}')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg> Cancel
+                </button>
+              </div>
+            </section>
+          `;
+        });
+
+        carousel.innerHTML = html;
+      } catch (err) {
+        console.error("Load Orders Error:", err);
+      }
+    }
+
+    // Carousel Drag-to-Scroll Logic (Existing, just ensuring variable scope)
     const slider = document.getElementById('priorityCarousel');
     const wrapper = document.querySelector('.priority-list-wrapper');
     let isDown = false;
@@ -219,17 +312,13 @@
         slider.scrollLeft = scrollLeft - walk;
       });
 
-      // Cleanup smooth scroll on drag end
       wrapper.addEventListener('mouseleave', () => {
         isDown = false;
       });
     }
 
-    // --- Logic migrated from home.html to centralize code ---
-
-    // Order Action Handlers (for Priority Sneak Peak on home page)
-    // Exposed to window to be accessible by inline onclick attributes
-    window.handleCompleteOrder = () => {
+    // Updated Action Handlers
+    window.handleCompleteOrder = (orderId) => {
       Swal.fire({
         title: 'Complete Order?',
         text: 'Are you sure you want to mark this order as done?',
@@ -239,19 +328,31 @@
         cancelButtonColor: '#6e7881',
         confirmButtonText: 'Yes, Mark as Done',
         cancelButtonText: 'Cancel'
-      }).then((result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
-          Swal.fire({
-            title: 'Completed!',
-            text: 'The order has been marked as done.',
-            icon: 'success',
-            confirmButtonColor: '#A67B5B'
-          });
+          try {
+            const { error } = await window.sb
+              .from('orders')
+              .update({ status: 'completed' })
+              .eq('order_id', orderId);
+
+            if (error) throw error;
+
+            Swal.fire({
+              title: 'Completed!',
+              text: 'The order has been marked as done.',
+              icon: 'success',
+              confirmButtonColor: '#A67B5B'
+            });
+            loadPriorityOrders(); // Refresh
+          } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+          }
         }
       });
     };
 
-    window.handleCancelOrder = () => {
+    window.handleCancelOrder = (orderId) => {
       Swal.fire({
         title: 'Cancel Order?',
         text: 'Are you sure you want to cancel this order? This action cannot be undone.',
@@ -261,14 +362,26 @@
         cancelButtonColor: '#6e7881',
         confirmButtonText: 'Yes, Cancel it',
         cancelButtonText: 'No, Keep it'
-      }).then((result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
-          Swal.fire({
-            title: 'Cancelled!',
-            text: 'The order has been removed.',
-            icon: 'error',
-            confirmButtonColor: '#A67B5B'
-          });
+          try {
+            const { error } = await window.sb
+              .from('orders')
+              .update({ status: 'cancelled' })
+              .eq('order_id', orderId);
+
+            if (error) throw error;
+
+            Swal.fire({
+              title: 'Cancelled!',
+              text: 'The order has been removed.',
+              icon: 'error',
+              confirmButtonColor: '#A67B5B'
+            });
+            loadPriorityOrders(); // Refresh
+          } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+          }
         }
       });
     };
@@ -288,11 +401,19 @@
       }
     };
 
-    // Update clock every second if elements exist
+    // Initialize Page Data
     if (document.getElementById('currentTime') && document.getElementById('currentDate')) {
       setInterval(updateClock, 1000);
       updateClock(); // Initial call
     }
+
+    // Wait for Supabase then load orders
+    const checkSbLoad = setInterval(() => {
+      if (window.sb) {
+        clearInterval(checkSbLoad);
+        loadPriorityOrders();
+      }
+    }, 500);
 
   })
 })()

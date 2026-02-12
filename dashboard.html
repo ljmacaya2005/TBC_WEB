@@ -249,7 +249,7 @@
 						</div>
 						<div class="stat-card-info">
 							<span class="stat-card-label">Total Checkouts</span>
-							<div class="stat-card-value">1,284</div>
+							<div class="stat-card-value" id="statTotalCheckouts">0</div>
 							<span class="stat-card-trend trend-up">
 								<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
 									fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -280,7 +280,7 @@
 						</div>
 						<div class="stat-card-info">
 							<span class="stat-card-label">Pending Orders</span>
-							<div class="stat-card-value">12</div>
+							<div class="stat-card-value" id="statPendingOrders">0</div>
 							<span class="stat-card-trend">Active awaiting prep</span>
 						</div>
 					</div>
@@ -298,7 +298,7 @@
 						</div>
 						<div class="stat-card-info">
 							<span class="stat-card-label">Total Refunds</span>
-							<div class="stat-card-value danger-text">₱1,500</div>
+							<div class="stat-card-value danger-text" id="statTotalRefunds">₱0.00</div>
 							<span class="stat-card-trend trend-down">
 								<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
 									fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -324,7 +324,7 @@
 						</div>
 						<div class="stat-card-info">
 							<span class="stat-card-label">Low Stock items</span>
-							<div class="stat-card-value warning-text">3 Items</div>
+							<div class="stat-card-value warning-text" id="statLowStock">0 Items</div>
 							<span class="stat-card-trend">Needs reorder soon</span>
 						</div>
 					</div>
@@ -381,7 +381,7 @@
 								Recent Transactions
 							</h3>
 						</div>
-						<div class="order-pills-container">
+						<div class="order-pills-container" id="recentOrdersContainer">
 							<div class="order-pill-premium">
 								<span class="order-id">#ORD-1024</span>
 								<span class="order-status completed">Completed</span>

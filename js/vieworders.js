@@ -1,268 +1,180 @@
-// View Orders - Premium Design Logic & Workflow
-
-// State management
+// View Orders - Supabase Real-time Integration
 let currentStatus = 'all';
 let searchQuery = '';
-let lastRenderedHTML = ''; // To prevent blinking
-
-// ─── Fetch Orders from Local Storage ───
-function getOrders() {
-    return JSON.parse(localStorage.getItem('brewcave_orders')) || [];
-}
-
-// ─── Save Orders to Local Storage ───
-function saveOrders(orders) {
-    localStorage.setItem('brewcave_orders', JSON.stringify(orders));
-}
+let ordersData = [];
+let lastRenderedHTML = '';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initial render
-    renderOrders();
+    // Initial load polling for Supabase
+    const checkSb = setInterval(() => {
+        if (window.sb) {
+            clearInterval(checkSb);
+            renderOrders();
+            // Polling for updates every 10 seconds
+            setInterval(renderOrders, 10000);
+        }
+    }, 500);
 
-    // Auto-refresh every 5 seconds to pick up new orders
-    setInterval(renderOrders, 5000);
-
-    // Tab Filtering Logic
-    const tabs = document.querySelectorAll('.status-tab');
-    tabs.forEach(tab => {
+    // Tab Filtering
+    document.querySelectorAll('.status-tab').forEach(tab => {
         tab.addEventListener('click', () => {
-            // Remove active class from all
-            tabs.forEach(t => t.classList.remove('active'));
-            // Add to clicked
+            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-
-            // Update state and re-render
             currentStatus = tab.dataset.status;
-            // Force re-render when switching tabs (ignore anti-blink)
-            lastRenderedHTML = '';
             renderOrders();
         });
     });
 
-    // Search Logic
+    // Search Filtering
     const searchInput = document.getElementById('orderSearchInput');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             searchQuery = e.target.value.toLowerCase().trim();
-            // Force re-render on search (ignore anti-blink)
-            lastRenderedHTML = '';
             renderOrders();
         });
     }
 });
 
-function renderOrders() {
+async function renderOrders() {
     const list = document.getElementById('ordersList');
     if (!list) return;
 
-    let orders = getOrders();
+    try {
+        if (!window.sb) return;
 
-    // 1. Filter by Status
-    // Note: 'all' shows everything except maybe 'cancelled' if desired, but user said "all orders section".
-    // Usually "All" shows everything. 
-    if (currentStatus !== 'all') {
-        orders = orders.filter(order => order.status.toLowerCase() === currentStatus);
-    }
+        // 1. Fetch data from Supabase
+        let query = window.sb
+            .from('orders')
+            .select(`
+                *,
+                order_items (
+                    *,
+                    menu_items (product_name)
+                ),
+                payments (payment_method, change_amount, amount_tendered)
+            `)
+            .order('created_at', { ascending: false });
 
-    // 2. Filter by Search Query
-    if (searchQuery) {
-        orders = orders.filter(order =>
-            order.id.toLowerCase().includes(searchQuery) ||
-            order.items.toLowerCase().includes(searchQuery) ||
-            (order.customer && order.customer.toLowerCase().includes(searchQuery))
-        );
-    }
+        if (currentStatus !== 'all') {
+            query = query.eq('status', currentStatus);
+        }
 
-    // Generate HTML
-    let htmlContent = '';
+        const { data: orders, error } = await query;
+        if (error) throw error;
 
-    if (orders.length === 0) {
-        const message = searchQuery
-            ? `No "${currentStatus}" orders match your search.`
-            : `No ${currentStatus === 'all' ? 'active' : currentStatus} orders found.`;
+        // 2. Client-side search filter
+        let filtered = orders;
+        if (searchQuery) {
+            filtered = orders.filter(o =>
+                o.order_code.toLowerCase().includes(searchQuery) ||
+                o.notes?.toLowerCase().includes(searchQuery) ||
+                o.order_items.some(item => item.menu_items?.product_name.toLowerCase().includes(searchQuery))
+            );
+        }
 
-        htmlContent = `<tr><td colspan="9" style="text-align:center; padding: 60px; opacity: 0.5;">
-            <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                ${message}
-            </div>
-        </td></tr>`;
-    } else {
-        htmlContent = orders.map(order => {
-            const statusLower = order.status.toLowerCase();
-            let actionButtons = '';
+        // 3. Generate HTML
+        let htmlContent = '';
+        if (filtered.length === 0) {
+            htmlContent = `<tr><td colspan="9" style="text-align:center; padding: 60px; opacity: 0.5;">No orders found.</td></tr>`;
+        } else {
+            htmlContent = filtered.map(order => {
+                const status = order.status.toLowerCase();
+                const itemsStr = order.order_items.map(i => `${i.quantity}x ${i.menu_items?.product_name || 'Item'}`).join('<br>');
+                const date = new Date(order.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
+                const payment = order.payments?.[0];
 
-            // Define Buttons based on Current Tab/Status
-            // User Request:
-            // All Orders -> Cancel Order
-            // Pending -> Prepare, Cancel
-            // Preparing -> Complete, Cancel
-            // Cancelled -> Undo
-
-            if (currentStatus === 'all') {
-                // In "All Orders", explicitly requested "Cancel Order" button
-                if (statusLower !== 'cancelled' && statusLower !== 'completed') {
-                    actionButtons += createButton(order.id, 'cancel', 'Cancel Order', 'rgba(231, 76, 60, 0.1)', '#e74c3c');
+                let actionBtn = '';
+                if (status === 'pending') {
+                    actionBtn = `
+                        <button class="btn-icon done-btn" onclick="updateOrderStatus('${order.order_id}', 'completed')" title="Complete">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </button>
+                        <button class="btn-icon delete-btn" onclick="updateOrderStatus('${order.order_id}', 'cancelled')" title="Cancel">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    `;
+                } else if (status === 'cancelled') {
+                    actionBtn = `
+                        <button class="btn-icon done-btn" onclick="updateOrderStatus('${order.order_id}', 'pending')" title="Restore">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                        </button>
+                    `;
                 }
-            } else if (currentStatus === 'pending') {
-                actionButtons += createButton(order.id, 'prepare', 'Start Preparing', 'rgba(52, 152, 219, 0.1)', '#3498db');
-                actionButtons += createButton(order.id, 'cancel', 'Cancel Order', 'rgba(231, 76, 60, 0.1)', '#e74c3c');
-            } else if (currentStatus === 'preparing') {
-                actionButtons += createButton(order.id, 'complete', 'Mark Completed', 'rgba(46, 204, 113, 0.1)', '#2ecc71');
-                actionButtons += createButton(order.id, 'cancel', 'Cancel Order', 'rgba(231, 76, 60, 0.1)', '#e74c3c');
-            } else if (currentStatus === 'cancelled') {
-                actionButtons += createButton(order.id, 'undo', 'Undo Cancel', 'rgba(166, 123, 91, 0.1)', '#A67B5B');
-            } else if (currentStatus === 'completed') {
-                // No specific actions requested for completed, maybe just view?
-                // Leaving empty for now as verified.
-            }
 
-            // Always add a "View" button for details if needed, or keep minimal
-            const viewButton = `<button class="btn-icon" title="View Details" style="background: rgba(166, 123, 91, 0.1); color: #A67B5B; border-color: rgba(166, 123, 91, 0.2);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    </button>`;
-
-            return `
-        <tr class="order-row">
-            <td data-label="Order ID" class="order-id-cell">${order.id}</td>
-            <td data-label="Date" class="order-date-cell">${order.date}</td>
-            <td data-label="Items" class="order-items-cell">
-                <span class="items-list">${order.items}</span>
-                ${order.customer ? `<div class="customer-name">Cust: ${order.customer}</div>` : ''}
-            </td>
-            <td data-label="Payment">${order.payment}</td>
-            <td data-label="Change">${order.change}</td>
-            <td data-label="Ref No." class="ref-no-cell">${order.ref || '-'}</td>
-            <td data-label="Total" class="order-total-cell">${order.total}</td>
-            <td data-label="Status">
-                <div class="status-action-group">
-                     <span class="status-badge status-${statusLower}">${order.status}</span>
-                     ${actionButtons}
-                </div>
-            </td>
-            <td data-label="Actions">
-                <div class="action-buttons-cell">
-                    ${viewButton}
-                </div>
-            </td>
-        </tr>
-    `}).join('');
-    }
-
-    // Anti-Blink Check
-    // We only update the DOM if the HTML string is different from the last render
-    if (htmlContent !== lastRenderedHTML) {
-        list.innerHTML = htmlContent;
-        lastRenderedHTML = htmlContent;
-    }
-}
-
-// Helper to create buttons
-function createButton(id, type, title, bg, color) {
-    let icon = '';
-    let onclick = '';
-
-    if (type === 'prepare') {
-        icon = '<polygon points="5 3 19 12 5 21 5 3"></polygon>'; // Play
-        onclick = `updateStatus('${id}', 'Preparing')`;
-    } else if (type === 'complete') {
-        icon = '<polyline points="20 6 9 17 4 12"></polyline>'; // Check
-        onclick = `updateStatus('${id}', 'Completed')`;
-    } else if (type === 'cancel') {
-        icon = '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'; // X
-        onclick = `cancelOrder('${id}')`;
-    } else if (type === 'undo') {
-        icon = '<polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>'; // Undo
-        onclick = `undoCancel('${id}')`;
-    }
-
-    return `
-    <button class="btn-icon btn-${type}" onclick="${onclick}" title="${title}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
-    </button>
-    `;
-}
-
-// ─── Status Actions ───
-
-// Standard Status Update
-window.updateStatus = (id, newStatus) => {
-    const orders = getOrders();
-    const orderIndex = orders.findIndex(o => o.id === id);
-
-    if (orderIndex !== -1) {
-        orders[orderIndex].status = newStatus;
-        saveOrders(orders);
-        renderOrders(); // Re-render immediately (bypass interval)
-        showToast(`Order ${id} marked as ${newStatus}`, 'success');
-    }
-};
-
-// Cancel Order (with stash)
-window.cancelOrder = (id) => {
-    Swal.fire({
-        title: 'Cancel Order?',
-        text: `Are you sure you want to cancel ${id}?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#e74c3c',
-        cancelButtonColor: '#6e7881',
-        confirmButtonText: 'Yes, Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const orders = getOrders();
-            const orderIndex = orders.findIndex(o => o.id === id);
-
-            if (orderIndex !== -1) {
-                // Save previous status to allow undo
-                orders[orderIndex].previousStatus = orders[orderIndex].status;
-                orders[orderIndex].status = 'Cancelled';
-
-                saveOrders(orders);
-                renderOrders();
-                showToast('Order has been cancelled.', 'info');
-            }
+                return `
+                    <tr>
+                        <td>
+                            <div class="code-cell">${order.order_code}</div>
+                            <div class="time-cell">${date}</div>
+                        </td>
+                        <td>
+                            <div class="items-list">${itemsStr}</div>
+                        </td>
+                        <td>${payment?.payment_method || 'N/A'}</td>
+                        <td>₱${(payment?.change_amount || 0).toFixed(2)}</td>
+                        <td>${payment?.reference_no || '-'}</td>
+                        <td><strong>₱${order.total_amount.toFixed(2)}</strong></td>
+                        <td>
+                            <span class="status-badge status-${status}">${order.status}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons-cell">
+                                ${actionBtn}
+                                <button class="btn-icon view-btn" onclick="viewOrderDetails('${order.order_id}')" title="View Details">
+                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
-    });
-};
 
-// Undo Cancel
-window.undoCancel = (id) => {
-    const orders = getOrders();
-    const orderIndex = orders.findIndex(o => o.id === id);
+        if (htmlContent !== lastRenderedHTML) {
+            list.innerHTML = htmlContent;
+            lastRenderedHTML = htmlContent;
+        }
 
-    if (orderIndex !== -1) {
-        // Restore previous status or default to Pending
-        const prev = orders[orderIndex].previousStatus || 'Pending';
-        orders[orderIndex].status = prev;
-        delete orders[orderIndex].previousStatus; // Clean up
+    } catch (err) {
+        console.error("View Orders Render Error:", err);
+    }
+}
 
-        saveOrders(orders);
+window.updateOrderStatus = async (orderId, newStatus) => {
+    try {
+        const { error } = await window.sb
+            .from('orders')
+            .update({ status: newStatus })
+            .eq('order_id', orderId);
+
+        if (error) throw error;
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: `Order marked as ${newStatus}`,
+            showConfirmButton: false,
+            timer: 2000
+        });
         renderOrders();
-        showToast(`Order restored to ${prev}`, 'success');
+    } catch (err) {
+        Swal.fire('Error', err.message, 'error');
     }
 };
 
-// Toast Helper
-function showToast(title, icon) {
-    const toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-        }
-    });
+window.viewOrderDetails = async (orderId) => {
+    // Basic implementation of view details
+    const order = ordersData.find(o => o.order_id === orderId);
+    if (!order) return;
 
-    toast.fire({
-        icon: icon,
-        title: title
+    Swal.fire({
+        title: `Order Details: ${order.order_code}`,
+        html: `<div style="text-align: left;">
+                  <p><b>Items:</b><br>${order.order_items.map(i => `${i.quantity}x ${i.menu_items?.product_name}`).join('<br>')}</p>
+                  <p><b>Total:</b> ₱${order.total_amount.toFixed(2)}</p>
+                  <p><b>Notes:</b> ${order.notes || 'N/A'}</p>
+               </div>`,
+        confirmButtonColor: '#A67B5B'
     });
-}
+};

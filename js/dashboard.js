@@ -172,23 +172,95 @@
     const fabSignOut = document.getElementById('fabSignOut');
     fabSignOut?.addEventListener('click', handleSignOut);
 
-    // Reload Handler
-    const fabRefresh = document.getElementById('fabRefresh');
-    fabRefresh?.addEventListener('click', (e) => {
-      e.preventDefault();
-      Swal.fire({
-        title: 'Reload Page?',
-        text: "Any unsaved changes will be lost.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#4E342E',
-        cancelButtonColor: '#6e7881',
-        confirmButtonText: 'Yes, Reload'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.reload();
+    // Initial Load for Dashboard Data
+    const initDashboardData = () => {
+      const checkSb = setInterval(async () => {
+        if (window.sb) {
+          clearInterval(checkSb);
+          fetchStats();
+          fetchRecentOrders();
+          // Refresh every minute
+          setInterval(() => {
+            fetchStats();
+            fetchRecentOrders();
+          }, 60000);
         }
-      });
-    });
+      }, 500);
+    };
+
+    const fetchStats = async () => {
+      try {
+        // 1. Total Checkouts (Completed orders)
+        const { count: totalCheckouts } = await window.sb
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'completed');
+
+        const totalEl = document.getElementById('statTotalCheckouts');
+        if (totalEl) totalEl.textContent = totalCheckouts?.toLocaleString() || '0';
+
+        // 2. Pending Orders
+        const { count: pendingOrders } = await window.sb
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'pending');
+
+        const pendingEl = document.getElementById('statPendingOrders');
+        if (pendingEl) pendingEl.textContent = pendingOrders || '0';
+
+        // 3. Total Refunds (Cancelled or Refunded orders - currently status cancelled is used for simpler logic)
+        // Summing total_amount for cancelled orders as a proxy for refunds
+        const { data: cancelledData } = await window.sb
+          .from('orders')
+          .select('total_amount')
+          .eq('status', 'cancelled');
+
+        const totalRefundsValue = cancelledData?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
+        const refundEl = document.getElementById('statTotalRefunds');
+        if (refundEl) refundEl.textContent = `₱${totalRefundsValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+        // 4. Low Stock
+        const { count: lowStockCount } = await window.sb
+          .from('stocks')
+          .select('*', { count: 'exact', head: true })
+          .lte('quantity', 10); // Using 10 as hardcoded threshold matching stocks.js
+
+        const lowStockEl = document.getElementById('statLowStock');
+        if (lowStockEl) lowStockEl.textContent = `${lowStockCount || 0} Items`;
+
+      } catch (err) {
+        console.error("Dashboard Stats Fetch Error:", err);
+      }
+    };
+
+    const fetchRecentOrders = async () => {
+      try {
+        const { data: recentOrders } = await window.sb
+          .from('orders')
+          .select('order_code, status')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        const container = document.getElementById('recentOrdersContainer');
+        if (!container) return;
+
+        if (!recentOrders || recentOrders.length === 0) {
+          container.innerHTML = '<p style="opacity:0.5; font-size:0.8rem;">No recent orders.</p>';
+          return;
+        }
+
+        container.innerHTML = recentOrders.map(order => `
+                <div class="order-pill-premium">
+                    <span class="order-id">${order.order_code}</span>
+                    <span class="order-status ${order.status.toLowerCase()}">${order.status}</span>
+                </div>
+            `).join('');
+
+      } catch (err) {
+        console.error("Recent Orders Fetch Error:", err);
+      }
+    };
+
+    initDashboardData();
   })
 })()

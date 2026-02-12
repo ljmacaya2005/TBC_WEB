@@ -206,6 +206,56 @@
     color: #e74c3c;
 }
 
+/* Featured & Unavailable Indicators */
+.mc-featured-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #A67B5B;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 5;
+    box-shadow: 0 4px 10px rgba(166, 123, 91, 0.4);
+}
+
+.mc-unavailable-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    z-index: 4;
+}
+
+.mc-menu-card.item-unavailable {
+    opacity: 0.7;
+    filter: grayscale(0.5);
+}
+
+.mc-menu-card.item-unavailable .mc-card-body {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.mc-menu-card.item-unavailable:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 /* ─── Ingredients Tab ─── */
 .mc-ingredients-section {
     display: flex;
