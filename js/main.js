@@ -265,18 +265,31 @@ async function handleLogin(event) {
 		localStorage.setItem('isLoggedIn', 'true');
 		localStorage.setItem('username', displayUsername);
 
-		// Fetch User Role from Public Table
+		// Fetch User Role & Permissions from Public Table
 		try {
-			const { data: userData } = await window.sb
+			const { data: userData, error: userError } = await window.sb
 				.from('users')
-				.select('role:roles(role_name)')
+				.select(`
+					role:roles(*)
+				`)
 				.eq('user_id', user.id)
 				.maybeSingle();
 
-			if (userData && userData.role && userData.role.role_name) {
-				localStorage.setItem('role', userData.role.role_name);
+			if (userData && userData.role) {
+				const perms = userData.role;
+				localStorage.setItem('role', perms.role_name);
+				localStorage.setItem('permissions', JSON.stringify(perms));
 			} else {
-				localStorage.setItem('role', 'Staff'); // Default
+				// Default fallback
+				localStorage.setItem('role', 'Staff');
+				localStorage.setItem('permissions', JSON.stringify({
+					role_name: 'Staff',
+					can_home: true,
+					can_profile: true,
+					can_dashboard: true,
+					can_take_orders: true,
+					can_view_orders: true
+				}));
 			}
 		} catch (ignored) {
 			console.warn("Could not fetch user role, defaulting to Staff");

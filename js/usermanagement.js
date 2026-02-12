@@ -283,13 +283,126 @@
 
     async function handleUserSubmit(e) {
         e.preventDefault();
+        const data = new FormData(userForm);
+        const userId = data.get('id');
+        const fName = data.get('firstName');
+        const lName = data.get('lastName');
+        const email = data.get('email');
+        const roleName = data.get('role');
+        const contact = data.get('contact');
+        const password = data.get('password');
+        const confirmPassword = data.get('confirmPassword');
+
+        if (!userId && password !== confirmPassword) {
+            Swal.fire('Error', 'Passwords do not match', 'error');
+            return;
+        }
+
         try {
-            Swal.fire({ title: 'Processing...', didOpen: () => Swal.showLoading() });
-            // Implementation of auth/profile logic would go here
-            Swal.fire('Success', 'User profile updated', 'success');
+            Swal.fire({
+                title: userId ? 'Updating Profile...' : 'Creating User...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            if (userId) {
+                // --- UPDATE EXISTING USER ---
+
+                // 1. Update Profiles Table
+                const { error: profileError } = await window.sb
+                    .from('profiles')
+                    .update({
+                        first_name: fName,
+                        last_name: lName,
+                        contact_num: contact,
+                        email: email // Note: Does not change Auth email, only profile
+                    })
+                    .eq('user_id', userId);
+
+                if (profileError) throw profileError;
+
+                // 2. Update Role in Users Table
+                const role = allRoles.find(r => r.role_name === roleName);
+                if (role) {
+                    const { error: userError } = await window.sb
+                        .from('users')
+                        .update({ role_id: role.role_id })
+                        .eq('user_id', userId);
+                    if (userError) throw userError;
+                }
+
+                Swal.fire({
+                    title: 'Profile Updated!',
+                    text: 'User information has been successfully modified.',
+                    icon: 'success',
+                    confirmButtonColor: '#A67B5B'
+                });
+            } else {
+                // --- CREATE NEW USER ---
+
+                // 1. Auth SignUp
+                const { data: authData, error: authError } = await window.sb.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            first_name: fName,
+                            last_name: lName
+                        }
+                    }
+                });
+
+                if (authError) throw authError;
+
+                const newUser = authData.user;
+                if (!newUser) throw new Error("Authentication failed to generate a user ID.");
+
+                // 2. Link Role & Create Metadata (Handled by triggers usually, but we ensure here)
+                const role = allRoles.find(r => r.role_name === roleName);
+                if (role) {
+                    // Check if users row exists
+                    const { data: userRow } = await window.sb.from('users').select('*').eq('user_id', newUser.id).maybeSingle();
+                    if (!userRow) {
+                        await window.sb.from('users').insert({
+                            user_id: newUser.id,
+                            role_id: role.role_id
+                        });
+                    } else {
+                        await window.sb.from('users').update({ role_id: role.role_id }).eq('user_id', newUser.id);
+                    }
+
+                    // Check if profile exists
+                    const { data: profileRow } = await window.sb.from('profiles').select('*').eq('user_id', newUser.id).maybeSingle();
+                    if (!profileRow) {
+                        await window.sb.from('profiles').insert({
+                            user_id: newUser.id,
+                            first_name: fName,
+                            last_name: lName,
+                            email: email,
+                            contact_num: contact
+                        });
+                    }
+                }
+
+                Swal.fire({
+                    title: 'User Created!',
+                    text: 'A verification email has been sent to the new user.',
+                    icon: 'success',
+                    confirmButtonColor: '#A67B5B'
+                });
+            }
+
             closeUserModal();
-            refreshData();
-        } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            await refreshData();
+        } catch (err) {
+            console.error("User Submit Error:", err);
+            Swal.fire({
+                title: 'Operation Failed',
+                text: err.message || 'An unexpected error occurred.',
+                icon: 'error',
+                confirmButtonColor: '#dc3741'
+            });
+        }
     }
 
     window.deleteUser = async (id) => {

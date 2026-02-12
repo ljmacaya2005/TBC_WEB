@@ -1,18 +1,35 @@
 /**
- * Session Handler & Global UI Injector
+ * Session Handler & RBAC Enforcement Module
  * Handles:
- * 1. Session verification (redirects to login if invalid)
- * 2. Injects the Global Glass Pill Footer
+ * 1. Session verification (Supabase + LocalStorage)
+ * 2. RBAC Enforcement (Page-level restrictions based on roles)
+ * 3. Dynamic UI adjustment (Sidebar/Action hiding)
  */
 
 (function () {
-    // --- 1. Session Verification Logic (Supabase + LocalStorage Fallback) ---
+    'use strict';
+
+    const PAGE_MAPPING = {
+        'dashboard.html': 'can_dashboard',
+        'takeorder.html': 'can_take_orders',
+        'vieworders.html': 'can_view_orders',
+        'stocks.html': 'can_stocks',
+        'menucustomization.html': 'can_menu_customization',
+        'orderhistory.html': 'can_order_history',
+        'usermanagement.html': 'can_user_management',
+        'sessionmanagement.html': 'can_session_management',
+        'settings.html': 'can_settings',
+        'auditlog.html': 'can_auditlog',
+        'profile.html': 'can_profile',
+        'home.html': 'can_home'
+    };
+
     const path = window.location.pathname;
-    const isLoginPage = path.endsWith('index.html') || path.endsWith('/') || path.endsWith('Work/') || path.endsWith('WORK/');
-    const isCallbackPage = path.endsWith('auth-callback.html'); // Exception for auth verification
+    const currentPage = path.split('/').pop() || 'index.html';
+    const isLoginPage = currentPage === 'index.html' || currentPage === '';
+    const isCallbackPage = currentPage === 'auth-callback.html';
 
-
-    // Hide body immediately
+    // Immediate Auth Protection: Hide body
     const style = document.createElement('style');
     style.id = 'auth-protection-style';
     style.innerHTML = 'body { visibility: hidden !important; opacity: 0 !important; }';
@@ -27,199 +44,184 @@
 
     async function checkSession() {
         let isAuthenticated = false;
+        let permissions = null;
 
-        // 1. Check LocalStorage (Temporary Hardcoded Login)
+        // 1. Fast Check: LocalStorage
         if (localStorage.getItem('isLoggedIn') === 'true') {
             isAuthenticated = true;
+            try {
+                const storedPerms = localStorage.getItem('permissions');
+                if (storedPerms) permissions = JSON.parse(storedPerms);
+            } catch (e) { /* corrupted perms */ }
         }
 
-        // 2. Check Supabase Session (Real Auth)
-        // Wait briefly for Supabase to load
+        // 2. Real Auth & Perms Check (Supabase)
         if (window.sb) {
-            const { data } = await window.sb.auth.getSession();
-            if (data.session) isAuthenticated = true;
-        } else {
-            // If sb isn't loaded yet, we might rely on localStorage for speed
-            // or retry. For now, localStorage is the primary "fast" check.
+            const { data: { session } } = await window.sb.auth.getSession();
+            if (session) {
+                isAuthenticated = true;
+                // Fetch fresh permissions if missing or periodically
+                if (!permissions) {
+                    permissions = await fetchUserPermissions(session.user.id);
+                }
+            } else {
+                isAuthenticated = false;
+            }
         }
 
-        handleRedirect(isAuthenticated);
+        handleEnforcement(isAuthenticated, permissions);
     }
 
-    function handleRedirect(isLoggedIn) {
-        // Allow callback page to process without interruption
+    async function fetchUserPermissions(userId) {
+        try {
+            const { data, error } = await window.sb
+                .from('users')
+                .select(`
+                    role:roles(*)
+                `)
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            if (data && data.role) {
+                const perms = data.role;
+                localStorage.setItem('permissions', JSON.stringify(perms));
+                localStorage.setItem('role', perms.role_name);
+                return perms;
+            }
+        } catch (e) {
+            console.error("RBAC: Failed to fetch permissions", e);
+        }
+        return null;
+    }
+
+    function handleEnforcement(isLoggedIn, permissions) {
         if (isCallbackPage) {
             showBody();
             return;
         }
 
-        if (!isLoginPage) {
-            // Protected Page
-            if (!isLoggedIn) {
+        if (!isLoggedIn) {
+            if (!isLoginPage) {
                 window.location.replace('index.html?session_expired=true');
             } else {
                 showBody();
             }
-        } else {
-            // Login Page
-            if (isLoggedIn) {
+            return;
+        }
+
+        // User Is Logged In
+        if (isLoginPage) {
+            window.location.replace('home.html');
+            return;
+        }
+
+        // --- RBAC Enforcement ---
+        const requiredPerm = PAGE_MAPPING[currentPage];
+
+        // If the page is mapped but user lacks permission
+        if (requiredPerm && permissions && permissions[requiredPerm] === false) {
+            console.warn(`RBAC: Access blocked for ${currentPage}. Redirecting to home.`);
+
+            // If they can't even access home.html, we have a problem. 
+            // We'll try to find the first allowed page.
+            if (currentPage !== 'home.html') {
                 window.location.replace('home.html');
             } else {
-                showBody();
-            }
-        }
-    }
-
-    // Run check when DOM is ready or Supabase is loaded
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => setTimeout(checkSession, 100));
-    } else {
-        setTimeout(checkSession, 100);
-    }
-
-    // --- 2. Footer Injection / Global UI ---
-    // DISABLED: User requested removal of footer to match Refreshed UI
-    /*
-    function injectGlobalUI() {
-        // A. Inject CSS for the footer
-        if (!document.querySelector('link[href*="footer-pill.css"]')) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'css/footer-pill.css';
-            document.head.appendChild(link);
-        }
-
-        // B. Inject Footer HTML
-        // Check if footer already exists to prevent duplicates
-        if (!document.querySelector('.glass-pill-footer')) {
-            const footer = document.createElement('div');
-            footer.className = 'glass-pill-footer';
-
-            // Footer Content
-            footer.innerHTML = `
-                <span class="highlight">2026 Elevate</span>
-                <span class="separator"></span>
-                <span>All rights reserved</span>
-                <span class="separator" style="display:none"></span>
-                <span style="opacity: 0.7; scale: 0.9;">The Brew Cave - POS & Inventory Management System</span>
-            `;
-
-            // TARGETED INJECTION to layout flow if possible
-            const dashboardMain = document.querySelector('.home-main-content');
-            if (dashboardMain) {
-                dashboardMain.appendChild(footer); // Static flow
-            } else {
-                document.body.appendChild(footer); // Fixed overlay fallback
-            }
-        }
-    }
-
-    // Run injection when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectGlobalUI);
-    } else {
-        injectGlobalUI();
-    }
-    */
-
-    // --- 3. Global Profile UI Update ---
-    async function updateGlobalProfileUI() {
-        try {
-            // Robust Wait for Supabase
-            let attempts = 0;
-            while (!window.sb && attempts < 20) { // Wait up to 4 seconds
-                await new Promise(r => setTimeout(r, 200));
-                attempts++;
-            }
-
-            if (!window.sb) {
-                console.warn("Supabase not loaded for Profile UI");
-            }
-
-            let user = null;
-            let profile = null;
-
-            if (window.sb) {
-                // Ensure session is actually ready
-                const { data } = await window.sb.auth.getSession();
-                if (data.session) {
-                    user = data.session.user;
-
-                    // Fetch profile with joins to match schema
-                    const { data: profileData, error } = await window.sb
-                        .from('users')
-                        .select(`
-                            user_id,
-                            role:roles(role_name),
-                            profile:profiles(first_name, last_name, profile_url)
-                        `)
-                        .eq('user_id', user.id)
-                        .maybeSingle(); // Use maybeSingle to prevent PGRST116 error if row is missing
-
-                    if (profileData) {
-                        profile = profileData;
-                        // Map properties to match user's logic if needed, or update logic below
-                    }
-                    if (error) console.warn("Profile fetch error:", error);
+                // Find first allowed page
+                const firstAllowed = Object.keys(PAGE_MAPPING).find(pg => permissions[PAGE_MAPPING[pg]] === true);
+                if (firstAllowed) window.location.replace(firstAllowed);
+                else {
+                    // Critical: No access to anything. Sign out.
+                    localStorage.clear();
+                    window.location.replace('index.html?error=no_access');
                 }
             }
+            return;
+        }
 
-            // Fallback to localStorage if no DB profile yet
+        // Access Granted
+        applyUITweaks(permissions);
+        updateGlobalProfileUI(permissions);
+        showBody();
+    }
+
+    function applyUITweaks(permissions) {
+        if (!permissions) return;
+
+        // 1. Sidebar Links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href) {
+                const pg = href.split('/').pop();
+                const perm = PAGE_MAPPING[pg];
+                if (perm && permissions[perm] === false) {
+                    link.closest('.nav-item').style.display = 'none';
+                }
+            }
+        });
+
+        // 2. Home Page Quick Actions
+        const quickActions = document.querySelectorAll('.action-btn-mini');
+        quickActions.forEach(btn => {
+            const onclick = btn.getAttribute('onclick');
+            if (onclick && onclick.includes('location.href')) {
+                const pgMatch = onclick.match(/'([^']+)'/);
+                if (pgMatch) {
+                    const pg = pgMatch[1];
+                    const perm = PAGE_MAPPING[pg];
+                    if (perm && permissions[perm] === false) {
+                        btn.style.display = 'none';
+                    }
+                }
+            }
+        });
+    }
+
+    async function updateGlobalProfileUI(permissions) {
+        // Updated to use both Supabase and permissions
+        try {
             const lsUsername = localStorage.getItem('username') || 'User';
             const lsRole = localStorage.getItem('role') || 'Staff';
 
-            // Determine Display Values
             let displayName = lsUsername;
-            let displayAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=A67B5B&color=fff`;
             let displayRole = lsRole;
+            let displayAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=A67B5B&color=fff`;
 
-            if (profile) {
-                // profile here is the object from 'users' table JOINED with 'profiles' and 'roles'
-                const p = profile.profile || {}; // profiles join
-                const r = profile.role || {};    // roles join
-
-                const fullName = (p.first_name || '') + ' ' + (p.last_name || '');
-                if (fullName.trim()) displayName = fullName.trim();
-
-                if (p.profile_url) displayAvatar = p.profile_url;
-                else displayAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=A67B5B&color=fff`;
-
-                if (r.role_name) displayRole = r.role_name;
-            } else if (user && user.email) {
-                // Use email as fallback name if LS is empty
-                if (displayName === 'User') displayName = user.email.split('@')[0];
-                displayAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=A67B5B&color=fff`;
+            // If we have permissions, we already have the role name
+            if (permissions && permissions.role_name) {
+                displayRole = permissions.role_name;
             }
 
-            // Update DOM Elements
-            // 1. Header Profile Button
+            // Optional: Fetch full profile details if they aren't in permissions object
+            // (permissions object is the 'roles' table record)
+
+            // Update Header
             const profileBtn = document.getElementById('profileBtn');
             if (profileBtn) {
-                const img = profileBtn.querySelector('img');
-                const name = profileBtn.querySelector('.user-name');
-                if (img) img.src = displayAvatar;
-                if (name) name.textContent = displayName;
+                const nameEl = profileBtn.querySelector('.user-name');
+                if (nameEl) nameEl.textContent = displayName;
             }
 
-            // 2. Sidebar Profile (if exists)
-            const sidebarAvatar = document.querySelector('.sidebar-user-avatar');
+            // Update Sidebar
             const sidebarName = document.querySelector('.sidebar-user-name');
             const sidebarRole = document.querySelector('.sidebar-user-role');
-
-            if (sidebarAvatar) sidebarAvatar.src = displayAvatar;
             if (sidebarName) sidebarName.textContent = displayName;
             if (sidebarRole) sidebarRole.textContent = displayRole;
 
+            // Update Home Display
+            const heroName = document.querySelector('.user-name-display');
+            if (heroName) heroName.textContent = displayName;
+
         } catch (e) {
-            console.warn("Profile UI Update Failed:", e);
+            console.warn("RBAC: UI update failed", e);
         }
     }
 
-    // Run UI update on load
+    // Run check when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', updateGlobalProfileUI);
+        document.addEventListener('DOMContentLoaded', () => setTimeout(checkSession, 50));
     } else {
-        updateGlobalProfileUI();
+        setTimeout(checkSession, 50);
     }
 
 })();
