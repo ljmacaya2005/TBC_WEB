@@ -243,60 +243,54 @@
 			</header>
 
 			<div class="home-container">
-				<!-- Action Bar -->
-				<div class="action-bar">
-					<div class="search-bar-wrapper">
-						<h2 style="font-weight: 700; color: var(--text-color); margin: 0;">User Management</h2>
-						<p style="margin: 5px 0 0; opacity: 0.6; font-size: 0.9rem;">Configure user profiles and
-							role-based page access</p>
+				<!-- Unified Management Toolbar -->
+				<div class="mgmt-toolbar">
+					<div class="mgmt-tabs-wrapper">
+						<button class="mgmt-tab active" onclick="switchTab('users')" id="tab-users">Users List</button>
+						<button class="mgmt-tab" onclick="switchTab('roles')" id="tab-roles">Roles</button>
 					</div>
+
 					<div style="display: flex; gap: 12px; align-items: center;">
-						<!-- Search Wrapper -->
-						<div class="search-wrapper">
+						<div class="premium-search">
 							<svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
 								viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 								stroke-linecap="round" stroke-linejoin="round">
 								<circle cx="11" cy="11" r="8"></circle>
 								<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
 							</svg>
-							<input type="text" class="search-input" placeholder="Search users or roles...">
+							<input type="text" class="search-input" placeholder="Search...">
 						</div>
 
 						<button class="btn-premium" onclick="openUserModal()" id="addUserBtn">
-							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
 								fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
 								stroke-linejoin="round">
 								<line x1="12" y1="5" x2="12" y2="19"></line>
 								<line x1="5" y1="12" x2="19" y2="12"></line>
 							</svg>
-							Add New User
+							Add User
 						</button>
 						<button class="btn-premium" onclick="openRoleModal()" id="addRoleBtn" style="display: none;">
-							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
 								fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
 								stroke-linejoin="round">
 								<line x1="12" y1="5" x2="12" y2="19"></line>
 								<line x1="5" y1="12" x2="19" y2="12"></line>
 							</svg>
-							Add New Role
+							Add Role
 						</button>
 					</div>
 				</div>
 
-				<!-- Management Tabs -->
-				<div class="tabs-container">
-					<button class="mgmt-tab active" onclick="switchTab('users')" id="tab-users">Users List</button>
-					<button class="mgmt-tab" onclick="switchTab('roles')" id="tab-roles">Role Configuration</button>
-				</div>
-
-				<!-- User Management Section -->
-				<div id="usersContent">
-					<div class="table-controls" style="margin-bottom: 20px;">
-						<table class="users-table">
+				<!-- Management Data Table Section -->
+				<div class="mgmt-container">
+					<!-- Users List Section -->
+					<div id="usersContent">
+						<table class="premium-table">
 							<thead>
 								<tr>
 									<th>Profile</th>
-									<th>Name</th>
+									<th>Full Name</th>
 									<th>Role</th>
 									<th>Contact</th>
 									<th>Email</th>
@@ -305,28 +299,28 @@
 								</tr>
 							</thead>
 							<tbody id="usersList">
-								<!-- Data populated by JS -->
+								<!-- Data loaded via JS -->
 							</tbody>
 						</table>
 					</div>
-				</div>
 
-				<!-- Role Management Section -->
-				<div id="rolesContent" style="display: none;">
-					<table class="premium-table">
-						<thead>
-							<tr>
-								<th>ID</th>
-								<th>Role Name</th>
-								<th>Accessible Pages</th>
-								<th>Created At</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-						<tbody id="rolesList">
-							<!-- Data populated by JS -->
-						</tbody>
-					</table>
+					<!-- Roles Configuration Section -->
+					<div id="rolesContent" style="display: none;">
+						<table class="premium-table">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Role Name</th>
+									<th>Permissions</th>
+									<th>Created</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody id="rolesList">
+								<!-- Data loaded via JS -->
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		</main>
@@ -415,108 +409,117 @@
 
 	<!-- User Modification Modal -->
 	<div class="modal-overlay" id="userModalOverlay">
-		<div class="modal-card" style="width: 500px;">
+		<div class="modal-card">
 			<div class="modal-header">
-				<h3 id="userModalTitle" style="margin: 0; font-weight: 700;">Create User Profile</h3>
+				<h3 id="userModalTitle">Create User Profile</h3>
 				<button class="close-btn" onclick="closeUserModal()">&times;</button>
 			</div>
+
 			<form id="userForm">
-				<input type="hidden" name="id">
+				<div class="modal-body-container">
+					<input type="hidden" name="id">
 
-				<div class="form-group">
-					<label>First Name</label>
-					<input type="text" name="firstName" required placeholder="First Name">
-				</div>
-				<div class="form-group">
-					<label>Last Name</label>
-					<input type="text" name="lastName" required placeholder="Last Name">
+					<div class="form-group">
+						<label>First Name</label>
+						<input type="text" name="firstName" required placeholder="First Name">
+					</div>
+					<div class="form-group">
+						<label>Last Name</label>
+						<input type="text" name="lastName" required placeholder="Last Name">
+					</div>
+
+					<div class="form-group">
+						<label>Role</label>
+						<select name="role" required title="Select user role">
+							<!-- Populated by JS -->
+						</select>
+					</div>
+					<div class="form-group">
+						<label>Contact Number</label>
+						<input type="tel" name="contact" placeholder="+63 9XX XXX XXXX">
+					</div>
+					<div class="form-group">
+						<label>Email</label>
+						<input type="email" name="email" required placeholder="name@example.com">
+					</div>
+					<div class="form-group">
+						<label>Password</label>
+						<input type="password" name="password" placeholder="••••••••">
+					</div>
+					<div class="form-group">
+						<label>Confirm Password</label>
+						<input type="password" name="confirmPassword" placeholder="••••••••">
+					</div>
 				</div>
 
-				<div class="form-group">
-					<label>Role</label>
-					<select name="role" required title="Select user role">
-						<!-- Populated by JS -->
-					</select>
-				</div>
-				<div class="form-group">
-					<label>Contact Number</label>
-					<input type="tel" name="contact" placeholder="+63 9XX XXX XXXX">
-				</div>
-				<div class="form-group">
-					<label>Email</label>
-					<input type="email" name="email" required placeholder="name@example.com">
-				</div>
-				<div class="form-group">
-					<label>Password</label>
-					<input type="password" name="password" placeholder="••••••••">
-				</div>
-				<div class="form-group">
-					<label>Confirm Password</label>
-					<input type="password" name="confirmPassword" placeholder="••••••••">
-				</div>
 
 				<div class="modal-footer">
 					<button type="button" class="btn-reset" onclick="closeUserModal()">Cancel</button>
 					<button type="submit" class="btn-premium">Save Changes</button>
+				</div>
 			</form>
 		</div>
 	</div>
 
 	<!-- Role Modal Overlay -->
 	<div class="modal-overlay" id="roleModalOverlay">
-		<div class="modal-card" style="width: 500px;">
+		<div class="modal-card">
 			<div class="modal-header">
-				<h3 id="roleModalTitle" style="margin: 0; font-weight: 700;">Role Configuration</h3>
+				<h3 id="roleModalTitle">Role Configuration</h3>
 				<button class="close-btn" onclick="closeRoleModal()">&times;</button>
 			</div>
-			<form id="roleForm">
-				<input type="hidden" name="id">
-				<div class="form-group">
-					<label>Role Name</label>
-					<input type="text" name="roleName" required placeholder="e.g. Supervisor">
-				</div>
 
-				<div class="form-group">
-					<label>Page Access Permissions</label>
-					<div id="permissionsGrid">
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_dashboard" value="true"> Dashboard
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_take_orders" value="true"> Take Order
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_view_orders" value="true"> View Orders
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_stocks" value="true"> Stocks
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_menu_customization" value="true"> Menu Customization
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_order_history" value="true"> Order History
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_user_management" value="true"> User Management
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_session_management" value="true"> Session Management
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_settings" value="true"> Settings
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_auditlog" value="true"> Audit Log
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_profile" value="true"> Profile
-						</label>
-						<label class="permission-checkbox">
-							<input type="checkbox" name="can_home" value="true"> Home Page
-						</label>
+			<form id="roleForm">
+				<div class="modal-body-container">
+					<input type="hidden" name="id">
+					<div class="form-group">
+						<label>Role Name</label>
+						<input type="text" name="roleName" required placeholder="e.g. Supervisor">
+					</div>
+
+					<div class="form-group">
+						<label>Page Access Permissions</label>
+						<div id="permissionsGrid">
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_dashboard" value="true"> Dashboard
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_take_orders" value="true"> Take Order
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_view_orders" value="true"> View Orders
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_stocks" value="true"> Stocks
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_menu_customization" value="true"> Menu Customization
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_order_history" value="true"> Order History
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_user_management" value="true"> User Management
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_session_management" value="true"> Session Management
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_settings" value="true"> Settings
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_auditlog" value="true"> Audit Log
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_profile" value="true"> Profile
+							</label>
+							<label class="permission-checkbox">
+								<input type="checkbox" name="can_home" value="true"> Home Page
+							</label>
+						</div>
 					</div>
 				</div>
+
 
 				<div class="modal-footer">
 					<button type="button" class="btn-reset" onclick="closeRoleModal()">Cancel</button>
@@ -545,7 +548,8 @@
 	<div class="modal-overlay" id="actionsModalOverlay">
 		<div class="custom-modal actions-modal">
 			<button class="close-modal-btn" onclick="closeAllModals()">&times;</button>
-			<h2 style="margin-bottom: 20px; color: #A67B5B;">Recent Actions</h2>
+			<h2 class="modal-title-premium">Recent Actions</h2>
+
 			<div class="actions-list">
 				<div class="action-audit-card">
 					<div class="audit-icon">
