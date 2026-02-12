@@ -35,6 +35,7 @@ function calcStatus(qty) {
 let editingStockId = null;
 let searchQuery = '';
 let currentStatus = 'all';
+let currentCategoryFilter = 'all';
 let lastRenderedHTML = ''; // To prevent blinking
 
 // ─── Initialization ───
@@ -42,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderStocks();
     setupSearch();
     setupStatusTabs();
+    setupCategoryFilter();
 });
 
 function setupSearch() {
@@ -71,36 +73,112 @@ function setupStatusTabs() {
     });
 }
 
+function setupCategoryFilter() {
+    const trigger = document.getElementById('stockCategoryTrigger');
+    const dropdown = document.getElementById('categoryFilterDropdown');
+    const options = document.querySelectorAll('.dropdown-option-premium');
+
+    if (trigger && dropdown) {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
+        });
+    }
+
+    options.forEach(opt => {
+        opt.addEventListener('click', () => {
+            currentCategoryFilter = opt.dataset.value;
+
+            // Update UI active state
+            options.forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+
+            // Update selected label
+            const label = document.getElementById('selectedCategoryName');
+            if (label) label.textContent = opt.textContent.trim();
+
+            // Close and render
+            if (dropdown) dropdown.classList.remove('active');
+            lastRenderedHTML = '';
+            renderStocks();
+        });
+    });
+
+    // Close on outside click
+    document.addEventListener('click', () => {
+        if (dropdown) dropdown.classList.remove('active');
+    });
+}
+
+function updateCategoryDropdown() {
+    const options = document.querySelectorAll('.dropdown-option-premium');
+    const label = document.getElementById('selectedCategoryName');
+
+    options.forEach(opt => {
+        if (opt.dataset.value === currentCategoryFilter) {
+            opt.classList.add('active');
+            if (label) label.textContent = opt.textContent.trim();
+        } else {
+            opt.classList.remove('active');
+        }
+    });
+}
+
 // ─── Render ───
 function renderStocks() {
     const list = document.getElementById('stocksList');
     if (!list) return;
 
-    let stocks = getStocks();
+    // 1. Get both sources of data
+    const stockItems = getStocks().map(s => ({ ...s, type: 'ingredients' }));
 
-    // 1. Filter by Status
+    // Get and normalize Add-ons
+    const addonsData = JSON.parse(localStorage.getItem('brewcave_addons')) || [];
+    const normalizedAddons = addonsData.map(a => ({
+        product_id: a.id.replace('addon_', 'ADD-'),
+        item_name: a.name,
+        category: 'Add-ons',
+        created_at: '--', // Add-ons don't have creation dates in their LS object currently
+        quantity: a.stockQty || 0,
+        unit: a.stockUnit || 'pcs',
+        type: 'addons',
+        status: calcStatus(a.stockQty || 0),
+        originalId: a.id
+    }));
+
+    // Combine
+    let combined = [...stockItems, ...normalizedAddons];
+
+    // 2. Filter by Type (Ingredients vs Add-ons)
+    if (currentCategoryFilter !== 'all') {
+        combined = combined.filter(item => item.type === currentCategoryFilter);
+    }
+
+    // 3. Filter by Status
     if (currentStatus !== 'all') {
-        stocks = stocks.filter(item => {
+        combined = combined.filter(item => {
             const status = calcStatus(item.quantity).toLowerCase();
             return status === currentStatus;
         });
     }
 
-    // 2. Filter by Search Query
+    // 4. Filter by Search Query
     if (searchQuery) {
-        stocks = stocks.filter(item =>
+        combined = combined.filter(item =>
             item.item_name.toLowerCase().includes(searchQuery) ||
-            item.product_id.toLowerCase().includes(searchQuery) ||
-            item.category.toLowerCase().includes(searchQuery)
+            item.product_id.toLowerCase().includes(searchQuery)
         );
     }
 
+    // Populate category dropdown (fixed items)
+    updateCategoryDropdown();
+
     let htmlContent = '';
 
-    if (stocks.length === 0) {
+    if (combined.length === 0) {
         const message = searchQuery
             ? `No "${currentStatus}" items match your search.`
-            : `No items found in "${currentStatus}" category.`;
+            : `No items found in "${currentStatus}" list.`;
 
         htmlContent = `<tr><td colspan="8" style="text-align:center; padding: 60px; opacity: 0.5;">
             <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
@@ -113,15 +191,20 @@ function renderStocks() {
             </div>
         </td></tr>`;
     } else {
-        htmlContent = stocks.map(item => {
+        htmlContent = combined.map(item => {
             const status = calcStatus(item.quantity);
             const statusClass = status.toLowerCase().replace(/ /g, '-');
+            const displayCategory = item.type === 'ingredients' ? 'Ingredients' : 'Add-ons';
 
             return `
             <tr style="animation: fadeIn 0.3s ease forwards;">
                 <td data-label="Product ID" style="font-family: monospace; font-weight: 600; color: var(--accent-color);">${item.product_id}</td>
                 <td data-label="Item Name" style="font-weight: 700;">${item.item_name}</td>
-                <td data-label="Category" style="opacity: 0.8;">${item.category}</td>
+                <td data-label="Category">
+                    <span class="badge" style="background: ${item.type === 'ingredients' ? 'rgba(166,123,91,0.1)' : 'rgba(112,102,224,0.1)'}; color: ${item.type === 'ingredients' ? '#A67B5B' : '#7066e0'}; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
+                        ${displayCategory}
+                    </span>
+                </td>
                 <td data-label="Created At" style="font-size: 0.85rem; opacity: 0.6;">${item.created_at}</td>
                 <td data-label="Quantity">
                     <span style="${item.quantity <= LOW_STOCK_THRESHOLD ? 'color: #e74c3c; font-weight: 800;' : 'font-weight: 600;'}">
@@ -134,12 +217,16 @@ function renderStocks() {
                 </td>
                 <td data-label="Actions">
                     <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                        <button class="btn-icon" title="Edit" onclick="editStock('${item.product_id}')">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                        </button>
-                        <button class="btn-icon" title="Delete" onclick="deleteStock('${item.product_id}')" style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; border-color: rgba(231, 76, 60, 0.2);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                        </button>
+                        ${item.type === 'ingredients' ? `
+                            <button class="btn-icon" title="Edit" onclick="editStock('${item.product_id}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="btn-icon" title="Delete" onclick="deleteStock('${item.product_id}')" style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; border-color: rgba(231, 76, 60, 0.2);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                        ` : `
+                            <span style="font-size: 0.75rem; opacity: 0.5; font-style: italic;">Managed in Menu</span>
+                        `}
                     </div>
                 </td>
             </tr>`;
