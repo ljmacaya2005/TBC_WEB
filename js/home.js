@@ -23,8 +23,13 @@
 
     // Close theme menus when clicking outside
     document.addEventListener('click', (event) => {
-      if (!quickThemeBtn?.contains(event.target) && !themeMenu?.contains(event.target)) {
-        themeMenu?.classList.remove('show');
+      const quickThemeBtn = document.getElementById('quickThemeBtn');
+      const themeMenu = document.getElementById('themeMenu');
+
+      if (quickThemeBtn && themeMenu) {
+        if (!quickThemeBtn.contains(event.target) && !themeMenu.contains(event.target)) {
+          themeMenu.classList.remove('show');
+        }
       }
 
       const indexMenu = document.querySelector('.theme-switcher .dropdown-menu');

@@ -269,12 +269,12 @@ async function handleLogin(event) {
 		try {
 			const { data: userData } = await window.sb
 				.from('users')
-				.select('role')
-				.eq('id', user.id)
-				.single();
+				.select('role:roles(role_name)')
+				.eq('user_id', user.id)
+				.maybeSingle();
 
-			if (userData && userData.role) {
-				localStorage.setItem('role', userData.role);
+			if (userData && userData.role && userData.role.role_name) {
+				localStorage.setItem('role', userData.role.role_name);
 			} else {
 				localStorage.setItem('role', 'Staff'); // Default
 			}

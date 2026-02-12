@@ -127,25 +127,25 @@ function renderOrders() {
                     </button>`;
 
             return `
-        <tr style="animation: fadeIn 0.3s ease forwards;">
-            <td data-label="Order ID" style="font-weight: 700; font-family: monospace; color: var(--accent-color);">${order.id}</td>
-            <td data-label="Date" style="font-size:0.85rem; opacity:0.8;">${order.date}</td>
-            <td data-label="Items" style="max-width: 200px; line-height:1.4;">
-                <span style="font-weight:500;">${order.items}</span>
-                ${order.customer ? `<div style="font-size:0.75rem; opacity:0.6; margin-top:2px;">Cust: ${order.customer}</div>` : ''}
+        <tr class="order-row">
+            <td data-label="Order ID" class="order-id-cell">${order.id}</td>
+            <td data-label="Date" class="order-date-cell">${order.date}</td>
+            <td data-label="Items" class="order-items-cell">
+                <span class="items-list">${order.items}</span>
+                ${order.customer ? `<div class="customer-name">Cust: ${order.customer}</div>` : ''}
             </td>
             <td data-label="Payment">${order.payment}</td>
             <td data-label="Change">${order.change}</td>
-            <td data-label="Ref No." style="font-family: monospace; opacity:0.7;">${order.ref || '-'}</td>
-            <td data-label="Total" style="font-weight: 700; color: var(--text-color); font-size:1rem;">${order.total}</td>
+            <td data-label="Ref No." class="ref-no-cell">${order.ref || '-'}</td>
+            <td data-label="Total" class="order-total-cell">${order.total}</td>
             <td data-label="Status">
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div class="status-action-group">
                      <span class="status-badge status-${statusLower}">${order.status}</span>
                      ${actionButtons}
                 </div>
             </td>
             <td data-label="Actions">
-                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <div class="action-buttons-cell">
                     ${viewButton}
                 </div>
             </td>
@@ -181,7 +181,7 @@ function createButton(id, type, title, bg, color) {
     }
 
     return `
-    <button class="btn-icon" onclick="${onclick}" title="${title}" style="background: ${bg}; color: ${color}; border-color: ${color}30;">
+    <button class="btn-icon btn-${type}" onclick="${onclick}" title="${title}">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
     </button>
     `;

@@ -1,4 +1,9 @@
-/* View Orders Stylings - Premium Redesign */
+/* View Orders Stylings - Premium Refresh */
+
+.home-container {
+    padding: 24px;
+    animation: fadeIn 0.5s ease-out;
+}
 
 /* Toolbar (Tabs + Search) */
 .orders-toolbar {
@@ -6,20 +11,22 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    padding: 10px 15px;
+    padding: 12px 20px;
     background: var(--card-bg, rgba(255, 255, 255, 0.05));
-    border-radius: 16px;
+    border-radius: 12px;
+    /* Standard Refresh Radius */
     border: 1px solid var(--glass-border);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .status-tabs {
     display: flex;
-    gap: 8px;
-    background: rgba(0, 0, 0, 0.1);
-    padding: 5px;
-    border-radius: 12px;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 4px;
+    border-radius: 10px;
 }
 
 .status-tab {
@@ -27,12 +34,12 @@
     border: none;
     background: transparent;
     color: var(--text-color);
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 600;
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.3s ease;
-    opacity: 0.7;
+    opacity: 0.6;
 }
 
 .status-tab:hover {
@@ -41,11 +48,15 @@
 }
 
 .status-tab.active {
-    background: var(--card-bg, #fff);
+    background: #fff;
     color: var(--accent-color, #A67B5B);
-    font-weight: 700;
     opacity: 1;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .status-tab.active {
+    background: var(--accent-color);
+    color: white;
 }
 
 .premium-search {
@@ -56,24 +67,24 @@
 
 .premium-search .search-input {
     width: 100%;
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 50px;
-    padding: 10px 20px 10px 40px;
+    padding: 10px 20px 10px 42px;
     color: var(--text-color);
+    font-size: 0.85rem;
     transition: all 0.3s ease;
 }
 
 .premium-search .search-input:focus {
-    background: rgba(0, 0, 0, 0.1);
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(166, 123, 91, 0.2);
+    box-shadow: 0 0 0 3px rgba(166, 123, 91, 0.1);
     outline: none;
 }
 
 .premium-search .search-icon {
     position: absolute;
-    left: 12px;
+    left: 15px;
     top: 50%;
     transform: translateY(-50%);
     opacity: 0.5;
@@ -82,167 +93,218 @@
 
 /* Orders Container */
 .orders-container {
-    background: var(--card-bg, #fff);
-    border-radius: 24px;
-    padding: 0;
-    /* Padding handling inside table for edge-to-edge feel */
-    margin: 0 auto;
-    width: 100%;
-    max-width: 100%;
-    box-shadow:
-        0 20px 50px -10px rgba(0, 0, 0, 0.15),
-        0 10px 20px -10px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-    /* Contain table corners */
-    animation: none !important;
+    border-radius: 12px;
+    overflow: hidden;
+    /* Important for edge-to-edge feel */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .orders-table {
     width: 100%;
-    border-collapse: separate;
-    /* For border-radius on rows */
-    border-spacing: 0 4px;
-    /* Spacing between rows */
-    padding: 0 15px 15px;
-    /* Side padding for the table body */
+    border-collapse: collapse;
+    /* Better for glassmorphism tables */
 }
 
 .orders-table th {
+    background: rgba(0, 0, 0, 0.03);
+    padding: 16px 20px;
     text-align: left;
-    padding: 20px 15px;
-    font-weight: 600;
-    color: var(--text-color);
     font-size: 0.8rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    opacity: 0.7;
+    letter-spacing: 1px;
+    color: var(--accent-color);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
     position: sticky;
     top: 0;
-    background: var(--card-bg);
-    /* Matches container to cover scrolling content */
     z-index: 10;
-    backdrop-filter: blur(10px);
-}
-
-.orders-table tbody tr {
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 12px;
-}
-
-.orders-table tbody tr:hover {
-    transform: scale(1.005);
-    background: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    position: relative;
-    z-index: 5;
 }
 
 .orders-table td {
-    padding: 20px 15px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 0.9rem;
     vertical-align: middle;
-    color: var(--text-color);
-    font-size: 0.95rem;
-    border-top: 1px solid transparent;
-    border-bottom: 1px solid transparent;
 }
 
-.orders-table tbody tr td:first-child {
-    border-top-left-radius: 12px;
-    border-bottom-left-radius: 12px;
-}
-
-.orders-table tbody tr td:last-child {
-    border-top-right-radius: 12px;
-    border-bottom-right-radius: 12px;
+.orders-table tr:hover {
+    background: rgba(0, 0, 0, 0.02);
 }
 
 /* Empty State */
-#ordersList td {
+.empty-state {
     text-align: center;
-    padding: 60px;
-    color: var(--text-color);
-    opacity: 0.6;
+    padding: 60px !important;
+    opacity: 0.5;
     font-style: italic;
     background: none !important;
-    box-shadow: none !important;
+}
+
+/* Order Table Cells */
+.order-row {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.order-id-cell {
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-color);
+}
+
+.order-date-cell {
+    font-size: 0.8rem;
+    opacity: 0.6;
+}
+
+.order-items-cell {
+    max-width: 250px;
+}
+
+.items-list {
+    font-weight: 600;
+    display: block;
+    line-height: 1.4;
+}
+
+.customer-name {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    margin-top: 4px;
+}
+
+.ref-no-cell {
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.5;
+}
+
+.order-total-cell {
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+.status-action-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.action-buttons-cell {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 /* Status Badges */
 .status-badge {
     padding: 6px 14px;
     border-radius: 50px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 1px solid transparent;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.status-badge::before {
-    content: '';
-    display: block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-}
-
 .status-pending {
-    background: rgba(241, 196, 15, 0.15);
+    background: rgba(241, 196, 15, 0.1);
     color: #f1c40f;
-    border-color: rgba(241, 196, 15, 0.2);
 }
 
 .status-preparing {
-    background: rgba(52, 152, 219, 0.15);
+    background: rgba(52, 152, 219, 0.1);
     color: #3498db;
-    border-color: rgba(52, 152, 219, 0.2);
 }
 
 .status-completed {
-    background: rgba(46, 204, 113, 0.15);
+    background: rgba(46, 204, 113, 0.1);
     color: #2ecc71;
-    border-color: rgba(46, 204, 113, 0.2);
 }
 
 .status-cancelled {
-    background: rgba(231, 76, 60, 0.15);
+    background: rgba(231, 76, 60, 0.1);
     color: #e74c3c;
-    border-color: rgba(231, 76, 60, 0.2);
 }
 
 /* Action Buttons */
 .btn-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-color);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: #fff;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s;
+    color: #555;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .btn-icon:hover {
-    background: var(--accent-color);
-    color: #fff !important;
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.btn-icon svg {
-    color: inherit !important;
-    /* Override inline styles */
+.btn-prepare {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+    border-color: rgba(52, 152, 219, 0.2);
+}
+
+.btn-prepare:hover {
+    background: #3498db;
+    color: white !important;
+}
+
+.btn-complete {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+    border-color: rgba(46, 204, 113, 0.2);
+}
+
+.btn-complete:hover {
+    background: #2ecc71;
+    color: white !important;
+}
+
+.btn-cancel {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.2);
+}
+
+.btn-cancel:hover {
+    background: #e74c3c;
+    color: white !important;
+}
+
+.btn-undo {
+    background: rgba(166, 123, 91, 0.1);
+    color: var(--accent-color);
+    border-color: rgba(166, 123, 91, 0.2);
+}
+
+.btn-undo:hover {
+    background: var(--accent-color);
+    color: white !important;
 }
 
 /* Responsive */

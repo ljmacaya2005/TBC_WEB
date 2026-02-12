@@ -145,14 +145,21 @@
                 if (data.session) {
                     user = data.session.user;
 
-                    // Fetch profile using wildcard to avoid "column does not exist" errors
+                    // Fetch profile with joins to match schema
                     const { data: profileData, error } = await window.sb
                         .from('users')
-                        .select('*')
-                        .eq('id', user.id)
-                        .single();
+                        .select(`
+                            user_id,
+                            role:roles(role_name),
+                            profile:profiles(first_name, last_name, profile_url)
+                        `)
+                        .eq('user_id', user.id)
+                        .maybeSingle(); // Use maybeSingle to prevent PGRST116 error if row is missing
 
-                    if (profileData) profile = profileData;
+                    if (profileData) {
+                        profile = profileData;
+                        // Map properties to match user's logic if needed, or update logic below
+                    }
                     if (error) console.warn("Profile fetch error:", error);
                 }
             }
@@ -167,13 +174,17 @@
             let displayRole = lsRole;
 
             if (profile) {
-                const fullName = (profile.first_name || '') + ' ' + (profile.last_name || '');
+                // profile here is the object from 'users' table JOINED with 'profiles' and 'roles'
+                const p = profile.profile || {}; // profiles join
+                const r = profile.role || {};    // roles join
+
+                const fullName = (p.first_name || '') + ' ' + (p.last_name || '');
                 if (fullName.trim()) displayName = fullName.trim();
 
-                if (profile.avatar_url) displayAvatar = profile.avatar_url;
+                if (p.profile_url) displayAvatar = p.profile_url;
                 else displayAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=A67B5B&color=fff`;
 
-                if (profile.role) displayRole = profile.role;
+                if (r.role_name) displayRole = r.role_name;
             } else if (user && user.email) {
                 // Use email as fallback name if LS is empty
                 if (displayName === 'User') displayName = user.email.split('@')[0];
