@@ -311,3 +311,121 @@ async function handleLogin(event) {
 		});
 	}
 }
+// --- Forgot Password Logic ---
+function showForgotPassword(event) {
+	if (event) event.preventDefault();
+	const loginCard = document.getElementById('loginCard');
+	const forgotCard = document.getElementById('forgotPasswordCard');
+
+	if (loginCard && forgotCard) {
+		loginCard.classList.add('card-hidden');
+		forgotCard.classList.add('show');
+	}
+}
+
+function hideForgotPassword(event) {
+	if (event) event.preventDefault();
+	const loginCard = document.getElementById('loginCard');
+	const forgotCard = document.getElementById('forgotPasswordCard');
+
+	if (loginCard && forgotCard) {
+		loginCard.classList.remove('card-hidden');
+		forgotCard.classList.remove('show');
+	}
+}
+
+async function handleForgotPasswordSubmit(event) {
+	event.preventDefault();
+	const email = document.getElementById('recoveryEmail').value.trim();
+	const firstName = document.getElementById('firstName').value.trim();
+	const lastName = document.getElementById('lastName').value.trim();
+	const newPassword = document.getElementById('newPassword').value.trim();
+	const confirmNewPassword = document.getElementById('confirmNewPassword').value.trim();
+	const reason = document.getElementById('recoveryReason').value.trim();
+
+	if (!email || !firstName || !lastName || !newPassword || !confirmNewPassword) {
+		Swal.fire({
+			title: 'Required Fields',
+			text: 'Please fill in all required fields.',
+			icon: 'warning',
+			confirmButtonColor: '#A67B5B'
+		});
+		return;
+	}
+
+	if (newPassword !== confirmNewPassword) {
+		Swal.fire({
+			title: 'Passwords Mismatch',
+			text: 'The new passwords requested do not match.',
+			icon: 'error',
+			confirmButtonColor: '#A67B5B'
+		});
+		return;
+	}
+
+	try {
+		Swal.fire({
+			title: 'Sending Request...',
+			allowOutsideClick: false,
+			didOpen: () => {
+				Swal.showLoading();
+			}
+		});
+
+		if (!window.sb) {
+			throw new Error("Supabase client not ready.");
+		}
+
+		// Store the request in Supabase
+		const { data, error } = await window.sb
+			.from('password_reset_requests')
+			.insert([
+				{
+					email: email,
+					first_name: firstName,
+					last_name: lastName,
+					preferred_password: newPassword,
+					reason: reason,
+					status: 'pending',
+					created_at: new Date().toISOString()
+				}
+			]);
+
+		// Even if the table doesn't exist yet, we'll handle it gracefully
+		if (error) {
+			console.error("Supabase Error:", error);
+			// If table doesn't exist, we might get a 404 or similar
+			if (error.code === '42P01') {
+				throw new Error("Reset request system is currently being set up by the administrator. Please try again later.");
+			}
+			throw error;
+		}
+
+		Swal.fire({
+			title: 'Request Sent!',
+			text: 'Your password reset request has been submitted to the administrator. Please wait for approval.',
+			icon: 'success',
+			confirmButtonColor: '#A67B5B'
+		}).then(() => {
+			hideForgotPassword();
+			document.getElementById('forgotPasswordForm').reset();
+		});
+
+	} catch (error) {
+		console.error("Forgot Password Error:", error);
+		Swal.fire({
+			title: 'Submission Failed',
+			text: error.message || 'An error occurred while sending your request.',
+			icon: 'error',
+			confirmButtonColor: '#d33'
+		});
+	}
+}
+
+// Expose functions to window
+window.showForgotPassword = showForgotPassword;
+window.hideForgotPassword = hideForgotPassword;
+window.handleForgotPasswordSubmit = handleForgotPasswordSubmit;
+window.handleLogin = handleLogin;
+window.showTermsModal = showTermsModal;
+window.showPrivacyModal = showPrivacyModal;

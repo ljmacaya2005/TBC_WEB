@@ -151,12 +151,32 @@
     .custom-modal {
         background: var(--card-bg, #fff);
         border-radius: 24px;
-        padding: 40px;
+        padding: 30px;
         position: relative;
         width: 100%;
         max-width: 450px;
+        max-height: 90vh;
+        overflow-y: auto;
         box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3);
         border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Style the scrollbar for custom-modal */
+    .custom-modal::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .custom-modal::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-modal::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+
+    [data-theme='dark'] .custom-modal::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
     }
 
     .close-modal-btn {
@@ -687,19 +707,19 @@
             <form id="addonForm" onsubmit="handleAddonFormSubmit(event)">
                 <input type="hidden" id="editAddonId">
 
-                <div class="form-group">
+                <div class="mc-form-group">
                     <label>Add-on Name</label>
                     <input type="text" id="addonName" class="form-control-premium" required
                         placeholder="e.g. Extra Shot">
                 </div>
 
-                <div class="form-group">
+                <div class="mc-form-group">
                     <label>Price (₱)</label>
                     <input type="number" id="addonPrice" class="form-control-premium" required min="0" step="0.01"
                         placeholder="0.00">
                 </div>
 
-                <div class="form-group">
+                <div class="mc-form-group">
                     <label>Applicable Menu Items</label>
                     <div class="mc-addon-selection-grid" id="addonApplicableItems">
                         <!-- Items rendered by JS as selectable chips -->
@@ -709,7 +729,7 @@
                 <div class="mc-divider"></div>
                 <div class="mc-section-title">Stock Deduction</div>
 
-                <div class="form-group">
+                <div class="mc-form-group">
                     <label>Deduct from Stock</label>
                     <div class="pos-dropdown" id="addonStockDropdown" style="width: 100%;">
                         <div class="dropdown-trigger-premium" id="addonStockTrigger">
@@ -729,12 +749,12 @@
                 </div>
 
                 <div class="mc-form-row">
-                    <div class="form-group" style="flex: 1;">
+                    <div class="mc-form-group" style="flex: 1;">
                         <label>Deduction Quantity</label>
                         <input type="number" id="addonStockQty" class="form-control-premium" step="0.01" min="0"
                             placeholder="0.00">
                     </div>
-                    <div class="form-group" style="flex: 1;">
+                    <div class="mc-form-group" style="flex: 1;">
                         <label>Unit (Measure)</label>
                         <input type="text" id="addonStockUnit" class="form-control-premium"
                             placeholder="e.g. ml, g, pcs">

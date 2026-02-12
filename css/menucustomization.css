@@ -643,7 +643,7 @@
 .mc-divider {
     height: 1px;
     background: rgba(0, 0, 0, 0.08);
-    margin: 25px 0;
+    margin: 15px 0;
 }
 
 [data-theme="dark"] .mc-divider {
@@ -656,7 +656,7 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     color: #A67B5B;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     opacity: 0.9;
 }
 
