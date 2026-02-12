@@ -805,22 +805,70 @@ button.primary:hover {
 	opacity: var(--faint-bean-opacity);
 }
 
-/* Forgot Password Styles */
+/* Reset Request Container (Forgot Password) */
 .forgot-card {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-	/* Match parent login-wrapper which should contain the cards */
 	z-index: 5;
 	max-height: 520px;
-	/* Force standard height */
 	overflow: hidden;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important;
+}
+
+.form-flex-row {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 10px;
+}
+
+.form-flex-row .form-row {
+	flex: 1;
+	margin: 0;
+}
+
+@media (max-width: 820px) {
+	.forgot-card {
+		position: relative !important;
+		max-height: 90vh !important;
+		height: auto !important;
+		flex-direction: column !important;
+		overflow-y: auto !important;
+	}
+
+	.form-flex-row {
+		flex-direction: column;
+		gap: 0;
+	}
+
+	/* When hidden or showing, we need to manage the space on mobile to prevent stacking */
+	.card-hidden {
+		display: none !important;
+	}
+
+	#forgotPasswordCard:not(.show) {
+		display: none !important;
+	}
 }
 
 .forgot-card .login-left {
 	padding: 24px 40px;
+}
+
+@media (max-width: 820px) {
+	.forgot-card .login-left {
+		padding: 24px 20px !important;
+		width: 100%;
+		max-height: none !important;
+		overflow: visible !important;
+		order: 1;
+	}
+
+	.forgot-card .login-right {
+		display: none !important;
+	}
 }
 
 .forgot-card .desc {
@@ -843,6 +891,51 @@ button.primary:hover {
 
 .forgot-card input {
 	padding: 8px 12px;
+}
+
+@media (max-width: 480px) {
+	.forgot-card {
+		max-height: 85vh !important;
+		margin: 10px auto !important;
+	}
+
+	.forgot-card .login-left {
+		padding: 20px 18px !important;
+	}
+
+	.forgot-card .brand {
+		font-size: 22px !important;
+		margin-bottom: 8px !important;
+		letter-spacing: 1px;
+	}
+
+	.forgot-card .desc {
+		font-size: 11px !important;
+		margin-bottom: 15px !important;
+		opacity: 0.8;
+	}
+
+	.forgot-card .form-row label {
+		font-size: 10px !important;
+		margin-bottom: 4px !important;
+		letter-spacing: 0.8px;
+	}
+
+	.forgot-card input,
+	.forgot-card textarea {
+		font-size: 14px !important;
+		padding: 12px !important;
+		margin-bottom: 2px;
+	}
+
+	.forgot-card .form-row {
+		margin-bottom: 12px !important;
+	}
+
+	.back-to-login-btn {
+		font-size: 12px !important;
+		margin-top: 8px !important;
+	}
 }
 
 .back-to-login-btn {

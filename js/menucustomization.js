@@ -769,7 +769,6 @@ function renderAddonsTab() {
         grid.innerHTML = `
             <div class="no-results">
                 <p>No add-ons found.</p>
-                ${addonSearchQuery ? '' : '<button class="mc-btn-primary" onclick="openAddAddonModal()">Create First Add-on</button>'}
             </div>
         `;
         return;
