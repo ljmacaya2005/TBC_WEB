@@ -32,49 +32,7 @@
 	})();
 </script>
 <style>
-	/* Smooth transition for theme switching */
-	html,
-	body,
-	*,
-	*::before,
-	*::after {
-		transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, fill 0.3s ease, stroke 0.3s ease, box-shadow 0.3s ease !important;
-	}
-
-	.user-link {
-		background: rgba(0, 0, 0, 0.05);
-		border: 1px solid rgba(0, 0, 0, 0.05);
-		padding: 6px 16px;
-		border-radius: 50px;
-		display: flex;
-		align-items: center;
-		cursor: pointer;
-		color: inherit;
-		font-family: inherit;
-	}
-
-	/* Theme Switcher Container Fix */
-	.theme-menu {
-		position: absolute;
-		bottom: 100%;
-		right: 0;
-		margin-bottom: 15px;
-		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(20px) saturate(180%);
-		border: 1px solid rgba(0, 0, 0, 0.1);
-		border-radius: 15px;
-		padding: 8px;
-		list-style: none;
-		min-width: 160px;
-		display: none;
-		flex-direction: column;
-		box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-		z-index: 1200;
-	}
-
-	.theme-menu.show {
-		display: flex;
-	}
+	/* Page-specific overrides */
 </style>
 
 <body>

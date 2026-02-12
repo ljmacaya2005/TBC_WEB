@@ -1683,13 +1683,20 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 	}
 
 	.home-header {
-		flex-direction: column;
-		gap: 8px;
-		align-items: flex-start;
-		padding: 12px;
-		margin-top: 50px;
+		flex-direction: row !important;
+		justify-content: space-between !important;
+		align-items: center !important;
+		gap: 10px;
+		padding: 10px 15px;
+		margin-top: 55px;
+		/* Stay below the ham-menu button */
 		background-color: var(--header-bg);
 		border-bottom: 1px solid var(--border-color);
+	}
+
+	.home-header .header-content {
+		flex: 1;
+		min-width: 0;
 	}
 
 	.home-header-left {
@@ -1697,9 +1704,12 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 	}
 
 	.page-title {
-		font-size: 18px;
+		font-size: 16px;
 		margin: 0;
 		font-weight: 700;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.page-subtitle {
@@ -1758,16 +1768,18 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 	}
 
 	.user-profile .user-link {
-		padding: 10px 20px;
+		padding: 6px 12px;
 	}
 
 	.user-avatar {
-		width: 32px;
-		height: 32px;
+		width: 28px;
+		height: 28px;
 	}
 
 	.user-name {
-		font-size: 13px;
+		font-size: 11px;
+		display: none;
+		/* Hide name on very small screens to save space */
 	}
 }
 
@@ -1820,13 +1832,19 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 	}
 
 	.home-header {
-		flex-direction: column;
-		gap: 12px;
-		align-items: flex-start;
-		padding: 15px;
-		margin-top: 50px;
+		flex-direction: row !important;
+		justify-content: space-between !important;
+		align-items: center !important;
+		padding: 12px 20px;
+		margin-top: 55px;
+		/* Stay below the ham-menu button */
 		background-color: var(--header-bg);
 		border-bottom: 1px solid var(--border-color);
+	}
+
+	.home-header .header-content {
+		flex: 1;
+		min-width: 0;
 	}
 
 	.home-header-left {
