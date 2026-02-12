@@ -121,9 +121,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- Functions ---
 
+// ─── Add-on Logic ───
+const LS_ADDONS_KEY = 'brewcave_addons';
+function getAddons() {
+    return JSON.parse(localStorage.getItem(LS_ADDONS_KEY)) || [];
+}
+
+let currentSelectedProduct = null;
+let currentSelectedAddons = [];
+
 function renderProducts() {
     productsGrid.innerHTML = '';
-
     const filtered = products.filter(p => {
         const matchesCategory = currentCategory === 'all' || p.category === currentCategory;
         const matchesSearch = p.name.toLowerCase().includes(searchQuery);
@@ -166,11 +174,36 @@ function addToCart(productId, event) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
-    const existingItem = cart.find(item => item.id === productId);
+    const allAddons = getAddons();
+    // Filter add-ons valid for this product
+    const applicableAddons = allAddons.filter(a => a.applicableItems && a.applicableItems.includes(productId));
+
+    if (applicableAddons.length > 0) {
+        openAddonSelectionModal(product, applicableAddons);
+    } else {
+        addToCartFinal(product, []);
+    }
+}
+
+function addToCartFinal(product, addons = []) {
+    // Generate unique ID based on product ID and sorted add-on IDs
+    const addonIds = addons.map(a => a.id).sort().join(',');
+    const cartId = product.id + (addonIds ? '|' + addonIds : '');
+
+    const existingItem = cart.find(item => item.cartId === cartId);
+
     if (existingItem) {
         existingItem.qty++;
     } else {
-        cart.push({ ...product, qty: 1 });
+        const addonTotal = addons.reduce((sum, a) => sum + parseFloat(a.price), 0);
+        cart.push({
+            ...product,
+            cartId: cartId, // Unique Cart ID
+            qty: 1,
+            selectedAddons: addons,
+            originalPrice: product.price,
+            price: product.price + addonTotal // Price includes add-ons for total calculation
+        });
     }
     renderCart();
 
@@ -185,20 +218,72 @@ function addToCart(productId, event) {
     });
 }
 
-function updateQty(productId, delta) {
-    const item = cart.find(i => i.id === productId);
+// Modal Functions
+function openAddonSelectionModal(product, addons) {
+    currentSelectedProduct = product;
+    document.getElementById('addonModalProductName').textContent = product.name;
+    const list = document.getElementById('addonSelectionList');
+    list.innerHTML = '';
+
+    addons.forEach(addon => {
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.alignItems = 'center';
+        div.style.padding = '8px 0';
+        div.style.borderBottom = '1px solid #eee';
+
+        div.innerHTML = `
+            <div style="display:flex; align-items:center;">
+                <input type="checkbox" id="add_addon_${addon.id}" value="${addon.id}" class="addon-checkbox" style="margin-right:10px; width:18px; height:18px;">
+                <label for="add_addon_${addon.id}" style="cursor:pointer; font-weight:500;">${addon.name}</label>
+            </div>
+            <span style="font-size:0.9em; color:#A67B5B; font-weight:600;">+₱${parseFloat(addon.price).toFixed(2)}</span>
+        `;
+        list.appendChild(div);
+    });
+
+    // Attach click event for confirm button
+    const confirmBtn = document.getElementById('confirmAddonsBtn');
+    // Remove old listeners to avoid duplicates if any (cloning technique or simple onclick)
+    confirmBtn.onclick = () => confirmAddons(addons);
+
+    document.getElementById('addonSelectionModal').classList.add('show');
+}
+
+function closeAddonSelectionModal() {
+    document.getElementById('addonSelectionModal').classList.remove('show');
+    currentSelectedProduct = null;
+}
+
+function confirmAddons(availableAddons) {
+    if (!currentSelectedProduct) return;
+
+    const checkboxes = document.querySelectorAll('.addon-checkbox:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+
+    // Get full addon objects
+    const selectedAddons = availableAddons.filter(a => selectedIds.includes(a.id));
+
+    addToCartFinal(currentSelectedProduct, selectedAddons);
+    closeAddonSelectionModal();
+}
+
+
+function updateQty(cartId, delta) {
+    const item = cart.find(i => i.cartId === cartId);
     if (!item) return;
 
     item.qty += delta;
     if (item.qty <= 0) {
-        removeFromCart(productId);
+        removeFromCart(cartId);
     } else {
         renderCart();
     }
 }
 
-function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
+function removeFromCart(cartId) {
+    cart = cart.filter(item => item.cartId !== cartId);
     renderCart();
 }
 
@@ -238,16 +323,25 @@ function renderCart() {
     cart.forEach(item => {
         const itemEl = document.createElement('div');
         itemEl.className = 'cart-item slide-in-right';
+
+        let addonsHtml = '';
+        if (item.selectedAddons && item.selectedAddons.length > 0) {
+            addonsHtml = `<div style="font-size: 0.8rem; opacity: 0.8; margin-top: 2px;">
+                ${item.selectedAddons.map(a => `+ ${a.name}`).join('<br>')}
+            </div>`;
+        }
+
         itemEl.innerHTML = `
             <img src="${item.image}" alt="${item.name}" class="cart-item-img" onerror="this.src='https://placehold.co/100/4E342E/FFF?text=${item.name.charAt(0)}'">
             <div class="cart-item-details">
                 <div class="cart-item-title">${item.name}</div>
+                ${addonsHtml}
                 <div class="cart-item-price">₱${(item.price * item.qty).toFixed(2)}</div>
             </div>
             <div class="cart-item-controls">
-                <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
+                <button class="qty-btn" onclick="updateQty('${item.cartId}', -1)">-</button>
                 <span class="qty-display">${item.qty}</span>
-                <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
+                <button class="qty-btn" onclick="updateQty('${item.cartId}', 1)">+</button>
             </div>
         `;
         cartItemsContainer.appendChild(itemEl);
@@ -265,17 +359,25 @@ function renderCart() {
                 </div>`;
         } else {
             cart.forEach(item => {
+                let addonsHtml = '';
+                if (item.selectedAddons && item.selectedAddons.length > 0) {
+                    addonsHtml = `<div style="font-size: 0.8rem; opacity: 0.8; margin-top: 2px;">
+                        ${item.selectedAddons.map(a => `+ ${a.name}`).join('<br>')}
+                    </div>`;
+                }
+
                 const itemEl = document.createElement('div');
                 itemEl.className = 'cart-item slide-in-right';
                 itemEl.innerHTML = `
                     <div class="cart-item-details">
                         <div class="cart-item-title">${item.name}</div>
+                        ${addonsHtml}
                         <div class="cart-item-price">₱${(item.price * item.qty).toFixed(2)}</div>
                     </div>
                     <div class="cart-item-controls">
-                        <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
+                        <button class="qty-btn" onclick="updateQty('${item.cartId}', -1)">-</button>
                         <span class="qty-display">${item.qty}</span>
-                        <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
+                        <button class="qty-btn" onclick="updateQty('${item.cartId}', 1)">+</button>
                     </div>
                 `;
                 mobileContainer.appendChild(itemEl);
@@ -288,19 +390,15 @@ function renderCart() {
 
 function updateTotals() {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const tax = subtotal * 0.05;
-    const total = subtotal + tax;
+    const total = subtotal;
 
     cartSubtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
-    cartTaxEl.textContent = `₱${tax.toFixed(2)}`;
     cartTotalEl.textContent = `₱${total.toFixed(2)}`;
 
     const mobileSub = document.getElementById('mobileCartSubtotal');
-    const mobileTax = document.getElementById('mobileCartTax');
     const mobileTotalDisplay = document.getElementById('mobileCartTotalDisplay');
 
     if (mobileSub) mobileSub.textContent = `₱${subtotal.toFixed(2)}`;
-    if (mobileTax) mobileTax.textContent = `₱${tax.toFixed(2)}`;
     if (mobileTotalDisplay) mobileTotalDisplay.textContent = `₱${total.toFixed(2)}`;
 
     const mobileCountEl = document.getElementById('mobileCartCount');
@@ -390,7 +488,7 @@ window.handleCheckout = () => {
         return;
     }
 
-    const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0) * 1.05;
+    const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
     if (typeof openPaymentModal === 'function') {
         openPaymentModal('₱' + total.toFixed(2));
     } else {

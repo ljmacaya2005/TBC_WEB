@@ -42,14 +42,9 @@
     // Mobile menu toggle
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('sidebar');
-    const sidebarClose = document.getElementById('sidebarClose');
 
     mobileMenuToggle?.addEventListener('click', () => {
       sidebar?.classList.toggle('active');
-    });
-
-    sidebarClose?.addEventListener('click', () => {
-      sidebar?.classList.remove('active');
     });
 
     // Close sidebar when clicking on nav links

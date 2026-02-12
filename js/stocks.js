@@ -6,21 +6,9 @@
 const LS_STOCKS_KEY = 'brewcave_stocks';
 const LOW_STOCK_THRESHOLD = 10;
 
-// ─── Default Stocks (seed on first load) ───
-const DEFAULT_STOCKS = [
-    { product_id: 'STK-001', item_name: 'Coffee Beans (Arabica)', category: 'Coffee', created_at: '2023-10-01', quantity: 50, unit: 'kg', status: 'In Stock' },
-    { product_id: 'STK-002', item_name: 'Almond Milk', category: 'Non-Coffee', created_at: '2023-10-05', quantity: 12, unit: 'L', status: 'In Stock' },
-    { product_id: 'STK-003', item_name: 'Croissants', category: 'Pastries', created_at: '2023-10-24', quantity: 0, unit: 'pcs', status: 'Out of Stock' },
-];
-
 // ─── Data Helpers ───
 function getStocks() {
-    let stocks = JSON.parse(localStorage.getItem(LS_STOCKS_KEY));
-    if (!stocks || stocks.length === 0) {
-        stocks = JSON.parse(JSON.stringify(DEFAULT_STOCKS));
-        saveStocks(stocks);
-    }
-    return stocks;
+    return JSON.parse(localStorage.getItem(LS_STOCKS_KEY)) || [];
 }
 
 function saveStocks(stocks) {
@@ -28,7 +16,7 @@ function saveStocks(stocks) {
 }
 
 function generateStockId() {
-    const stocks = getStocks();
+    const stocks = JSON.parse(localStorage.getItem(LS_STOCKS_KEY)) || [];
     let maxNum = 0;
     stocks.forEach(s => {
         const match = s.product_id.match(/^STK-(\d+)$/);
@@ -105,12 +93,176 @@ function renderStocks() {
 }
 
 // ─── Modal ───
+// ─── Constants ───
+const DEFAULT_CATEGORIES = [
+    'Coffee Beans & Tea',
+    'Syrups & Sweeteners',
+    'Dairy & Milk Alternatives',
+    'Powders & Frappe Mixes',
+    'Pastries & Prepared Food',
+    'Cups, Lids & Straws',
+    'Napkins & Utensils',
+    'Cleaning & Janitorial',
+    'Barista Tools & Equipment',
+    'Retail Merchandise',
+    'Takeout Packaging',
+    'Office & POS Supplies'
+];
+const LS_CUSTOM_CATS_KEY = 'brewcave_custom_categories';
+
+// ─── Category Helpers ───
+function getCustomCategories() {
+    return JSON.parse(localStorage.getItem(LS_CUSTOM_CATS_KEY)) || [];
+}
+
+function saveCustomCategory(category) {
+    const custom = getCustomCategories();
+    // Check if it exists in default or custom
+    if (!DEFAULT_CATEGORIES.includes(category) && !custom.includes(category)) {
+        custom.push(category);
+        localStorage.setItem(LS_CUSTOM_CATS_KEY, JSON.stringify(custom));
+    }
+}
+
+function renderCategoryOptions(selectedVal = null) {
+    if (!categorySelect) return;
+
+    categorySelect.innerHTML = '';
+
+    // Combine Default + Custom
+    const allCategories = [...DEFAULT_CATEGORIES, ...getCustomCategories()];
+
+    allCategories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+    });
+
+    // Add Custom Option
+    const customOption = document.createElement('option');
+    customOption.value = 'custom';
+    customOption.textContent = 'Other / Custom...';
+    categorySelect.appendChild(customOption);
+
+    // Set selection
+    if (selectedVal && allCategories.includes(selectedVal)) {
+        categorySelect.value = selectedVal;
+    } else if (selectedVal) {
+        // If selectedVal is not in list (shouldn't happen if we saved it), default to custom?
+        // Actually, if we just saved it, it should be in the list now.
+        // If coming from Edit and it's a legacy category not in new defaults? 
+        // We should add it to custom list if it's missing?
+        // For now, let's just select it if present.
+    } else {
+        categorySelect.value = DEFAULT_CATEGORIES[0];
+    }
+}
+
+// ─── Modal Logic ───
+const stockForm = document.getElementById('stockForm');
+const categorySelect = stockForm ? stockForm.elements['category'] : null;
+const categoryInput = stockForm ? stockForm.elements['categoryInput'] : null;
+
+// Event Listeners for UI interaction
+if (stockForm) {
+    // When Category changes
+    categorySelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val === 'custom') {
+            // Show Custom Category Input
+            categoryInput.style.display = 'block';
+            categoryInput.required = true;
+            categoryInput.focus();
+        } else {
+            // Hide Custom Category Input
+            categoryInput.style.display = 'none';
+            categoryInput.required = false;
+        }
+    });
+
+    // Form Submit
+    stockForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Determine Category
+        let finalCategory = '';
+        if (categorySelect.value === 'custom') {
+            finalCategory = categoryInput.value.trim();
+        } else {
+            finalCategory = categorySelect.value;
+        }
+
+        const itemName = stockForm.elements['itemName'].value.trim();
+        const quantity = parseInt(stockForm.elements['quantity'].value) || 0;
+        const unit = stockForm.elements['unit'].value;
+
+        if (!finalCategory) {
+            Swal.fire({ icon: 'error', title: 'Missing Category', text: 'Please enter a category.', confirmButtonColor: '#A67B5B' });
+            return;
+        }
+
+        // Save Custom Category if needed
+        if (categorySelect.value === 'custom') {
+            saveCustomCategory(finalCategory);
+            // Re-render categories to include the new one (optional, but good for next time)
+            // We usually close the modal right after, so it will re-render on next open.
+        }
+
+        if (!itemName) {
+            Swal.fire({ icon: 'error', title: 'Missing Name', text: 'Please enter an item name.', confirmButtonButtonColor: '#A67B5B' });
+            return;
+        }
+
+        let stocks = getStocks();
+
+        if (editingStockId) {
+            // Update existing
+            const idx = stocks.findIndex(s => s.product_id === editingStockId);
+            if (idx !== -1) {
+                stocks[idx].item_name = itemName;
+                stocks[idx].category = finalCategory;
+                stocks[idx].quantity = quantity;
+                stocks[idx].unit = unit;
+                stocks[idx].status = calcStatus(quantity);
+            }
+            Swal.fire({ icon: 'success', title: 'Updated!', text: `${itemName} has been updated.`, timer: 1500, showConfirmButton: false });
+        } else {
+            // Add new
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const newItem = {
+                product_id: generateStockId(),
+                item_name: itemName,
+                category: finalCategory,
+                created_at: dateStr,
+                quantity,
+                unit,
+                status: calcStatus(quantity)
+            };
+            stocks.push(newItem);
+            Swal.fire({ icon: 'success', title: 'Added!', text: `${itemName} added to inventory.`, timer: 1500, showConfirmButton: false });
+        }
+
+        saveStocks(stocks);
+        closeStockModal();
+        renderStocks();
+    });
+}
+
 window.openStockModal = () => {
     editingStockId = null;
     document.getElementById('stockModalTitle').textContent = 'Add New Item';
     const submitBtn = document.querySelector('#stockForm button[type="submit"]');
     if (submitBtn) submitBtn.textContent = 'Add Item';
-    document.getElementById('stockForm').reset();
+
+    stockForm.reset();
+
+    // Reset UI state
+    renderCategoryOptions(); // Populate dropdown
+    categorySelect.selectedIndex = 0; // Default first item
+    categoryInput.style.display = 'none';
+
     document.getElementById('stockModalOverlay').classList.add('show');
 };
 
@@ -130,11 +282,28 @@ window.editStock = (id) => {
     const submitBtn = document.querySelector('#stockForm button[type="submit"]');
     if (submitBtn) submitBtn.textContent = 'Update Item';
 
-    const form = document.getElementById('stockForm');
-    form.elements['itemName'].value = item.item_name;
-    form.elements['category'].value = item.category;
-    form.elements['quantity'].value = item.quantity;
-    form.elements['unit'].value = item.unit;
+    // Populate Categories (Default + Custom)
+    renderCategoryOptions(item.category);
+
+    // Check if category matches one of the options (now including custom saved ones)
+    // If renderCategoryOptions handled it, categorySelect.value should be set.
+    // However, if the item has a legacy category or a custom one that somehow wasn't saved?
+    // Secure check:
+    if (categorySelect.value !== item.category) {
+        // It's a custom category that might not be in the list? 
+        // Or renderCategoryOptions didn't find it.
+        // Let's force custom mode.
+        categorySelect.value = 'custom';
+        categoryInput.style.display = 'block';
+        categoryInput.value = item.category;
+    } else {
+        // It matched a list item
+        categoryInput.style.display = 'none';
+    }
+
+    stockForm.elements['itemName'].value = item.item_name;
+    stockForm.elements['quantity'].value = item.quantity;
+    stockForm.elements['unit'].value = item.unit;
 
     document.getElementById('stockModalOverlay').classList.add('show');
 };
@@ -162,56 +331,3 @@ window.deleteStock = (id) => {
         }
     });
 };
-
-// ─── Form Submit ───
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('stockForm');
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const itemName = form.elements['itemName'].value.trim();
-            const category = form.elements['category'].value;
-            const quantity = parseInt(form.elements['quantity'].value) || 0;
-            const unit = form.elements['unit'].value;
-
-            if (!itemName) {
-                Swal.fire({ icon: 'error', title: 'Missing Name', text: 'Please enter an item name.', confirmButtonColor: '#A67B5B' });
-                return;
-            }
-
-            let stocks = getStocks();
-
-            if (editingStockId) {
-                // Update existing
-                const idx = stocks.findIndex(s => s.product_id === editingStockId);
-                if (idx !== -1) {
-                    stocks[idx].item_name = itemName;
-                    stocks[idx].category = category;
-                    stocks[idx].quantity = quantity;
-                    stocks[idx].unit = unit;
-                    stocks[idx].status = calcStatus(quantity);
-                }
-                Swal.fire({ icon: 'success', title: 'Updated!', text: `${itemName} has been updated.`, timer: 1500, showConfirmButton: false });
-            } else {
-                // Add new
-                const now = new Date();
-                const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-                const newItem = {
-                    product_id: generateStockId(),
-                    item_name: itemName,
-                    category,
-                    created_at: dateStr,
-                    quantity,
-                    unit,
-                    status: calcStatus(quantity)
-                };
-                stocks.push(newItem);
-                Swal.fire({ icon: 'success', title: 'Added!', text: `${itemName} added to inventory.`, timer: 1500, showConfirmButton: false });
-            }
-
-            saveStocks(stocks);
-            closeStockModal();
-            renderStocks();
-        });
-    }
-});

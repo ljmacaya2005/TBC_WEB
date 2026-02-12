@@ -317,13 +317,7 @@
 
 		<!-- Sidebar -->
 		<aside class="sidebar" id="sidebar">
-			<button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-					stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<line x1="18" y1="6" x2="6" y2="18"></line>
-					<line x1="6" y1="6" x2="18" y2="18"></line>
-				</svg>
-			</button>
+
 			<a href="#" class="sidebar-brand">
 				<img id="brandIcon" src="assets/logo-white.png" alt="The Brew Cave Logo" class="brand-icon">
 				<span class="brand-text">THE BREW CAVE</span>
@@ -642,18 +636,17 @@
 			<form id="stockForm" style="display: grid; gap: 15px;">
 				<div class="form-group">
 					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Item Name</label>
-					<input type="text" name="itemName" required
+					<input type="text" name="itemName" required placeholder="Enter item name"
 						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
 				</div>
 				<div class="form-group">
 					<label style="display: block; margin-bottom: 5px; font-weight: 500;">Category</label>
 					<select name="category"
 						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);">
-						<option value="Coffee">Coffee</option>
-						<option value="Pastries">Pastries</option>
-						<option value="Non-Coffee">Non-Coffee</option>
-						<option value="Merchandise">Merchandise</option>
+						<!-- Populated by JS -->
 					</select>
+					<input type="text" name="categoryInput" placeholder="Enter custom category"
+						style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5); display: none; margin-top: 5px;">
 				</div>
 				<div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
 					<div>

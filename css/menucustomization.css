@@ -53,8 +53,15 @@
 }
 
 @keyframes fadeInTab {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Action Bar */
@@ -486,9 +493,437 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
+
 [data-theme="dark"] .mc-search-input {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Premium Dropdown (Copied from TakeOrder) ─── */
+.pos-dropdown {
+    position: relative;
+    width: 200px;
+    z-index: 1100;
+}
+
+.dropdown-trigger-premium {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(166, 123, 91, 0.15);
+    border: 1px solid rgba(166, 123, 91, 0.2);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    user-select: none;
+    -webkit-user-select: none;
+    height: 42px;
+    /* Accessability match input height */
+}
+
+.dropdown-trigger-premium:hover {
+    background: rgba(166, 123, 91, 0.25);
+    border-color: rgba(166, 123, 91, 0.4);
+    transform: translateY(-1px);
+}
+
+.dropdown-icon {
+    transition: transform 0.3s ease;
+    opacity: 0.7;
+    color: var(--brand-color);
+}
+
+.pos-dropdown.active .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+/* ─── Premium Modal Inputs ─── */
+.form-control-premium {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    /* Default light border */
+    background: rgba(255, 255, 255, 0.9);
+    /* High contrast for inputs */
+    font-size: 0.95rem;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.form-control-premium:focus {
+    outline: none;
+    border-color: #A67B5B;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(166, 123, 91, 0.15);
+}
+
+[data-theme="dark"] .form-control-premium {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #eee;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .form-control-premium:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #A67B5B;
+    box-shadow: 0 0 0 4px rgba(166, 123, 91, 0.25);
+}
+
+/* ─── Premium Modal Buttons ─── */
+.modal-actions {
+    margin-top: 25px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: transparent;
+    color: var(--text-color, #555);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+}
+
+[data-theme="dark"] .btn-cancel {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #ccc;
+}
+
+[data-theme="dark"] .btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.btn-save {
+    padding: 10px 24px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #A67B5B, #8B6546);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(166, 123, 91, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(166, 123, 91, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn-save:active {
+    transform: translateY(0);
+}
+
+
+/* ─── Premium Add-on Selection Grid ─── */
+.mc-addon-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 4px;
+    /* Space for focus rings/shadows */
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.mc-addon-option {
+    position: relative;
+    /* Ensure label context */
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Hide default checkbox visually but keep it accessible/functional */
+.mc-addon-option input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    /* width/height 0 so it doesn't affect layout if position absolute fails */
+    width: 0;
+    height: 0;
+}
+
+/* The visual chip */
+.mc-addon-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 12px;
+    background: var(--card-bg, #fff);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    /* Subtle border */
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-color, #555);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.mc-addon-option:hover .mc-addon-chip {
+    background: rgba(166, 123, 91, 0.08);
+    border-color: rgba(166, 123, 91, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Checked State */
+.mc-addon-option input:checked+.mc-addon-chip {
+    background: #A67B5B;
+    /* Brand Brown */
+    color: white;
+    border-color: #A67B5B;
+    box-shadow: 0 4px 10px rgba(166, 123, 91, 0.3);
+    font-weight: 600;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .mc-addon-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollbar refinement for the grid container */
+.mc-addon-selection-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mc-addon-selection-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.mc-addon-selection-grid::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.mc-addon-selection-grid:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Premium Add-on Card Design ─── */
+.mc-addon-card {
+    background: var(--card-bg, #fff);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    position: relative;
+    overflow: hidden;
+}
+
+.mc-addon-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.06);
+    border-color: rgba(166, 123, 91, 0.15);
+}
+
+.mc-addon-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #A67B5B;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.mc-addon-card:hover::before {
+    opacity: 1;
+}
+
+.mc-addon-info {
+    flex: 1;
+}
+
+.mc-addon-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.mc-addon-name {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-color, #333);
+}
+
+.mc-addon-price {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #A67B5B;
+    background: rgba(166, 123, 91, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.mc-addon-details {
+    display: flex;
+    align-items: center;
+}
+
+.mc-addon-badge {
+    font-size: 0.8rem;
+    color: var(--text-color, #666);
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mc-addon-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 15px;
+}
+
+.mc-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color, #555);
+    transition: all 0.2s;
+}
+
+.mc-icon-btn:hover {
+    background: rgba(166, 123, 91, 0.15);
+    color: #A67B5B;
+    transform: scale(1.05);
+}
+
+.mc-icon-btn.delete:hover {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+[data-theme="dark"] .mc-addon-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .mc-icon-btn {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ccc;
+}
+
+.dropdown-menu-premium {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: rgba(166, 123, 91, 0.9);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    padding: 8px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    animation: dropdownPop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    transform-origin: top center;
+    z-index: 9999;
+}
+
+@keyframes dropdownPop {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.pos-dropdown.active .dropdown-menu-premium {
+    display: flex;
+}
+
+.dropdown-option-premium {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-color);
+    opacity: 0.8;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.dropdown-option-premium svg {
+    opacity: 0.6;
+    transition: transform 0.2s ease;
+}
+
+.dropdown-option-premium:hover {
+    background: rgba(166, 123, 91, 0.1);
+    opacity: 1;
+}
+
+.dropdown-option-premium:hover svg {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.dropdown-option-premium.active {
+    background: var(--brand-color);
+    color: var(--bg-color);
+    opacity: 1;
+    font-weight: 700;
+}
+
+.dropdown-option-premium.active svg {
+    opacity: 1;
+    color: inherit;
 }
 
 [data-theme="dark"] .mc-select-menu {

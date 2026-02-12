@@ -1,7 +1,14 @@
 /**
  * THE BREW CAVE — Menu Customization Logic
  * Manages menu items and their ingredients via localStorage
+ * Ingredients are pulled from stocks (brewcave_stocks)
  */
+
+const LS_STOCKS_KEY_REF = 'brewcave_stocks';
+
+function getStockItems() {
+    return JSON.parse(localStorage.getItem(LS_STOCKS_KEY_REF)) || [];
+}
 
 // ─── Default Products (seed on first load) ───
 const DEFAULT_PRODUCTS = [
@@ -68,6 +75,7 @@ function generateIngredientId() {
 // ─── State ───
 let currentTab = 'menu';
 let menuSearchQuery = '';
+let menuFilterCategory = 'all'; // New state for category filter
 let editingMenuId = null;
 let selectedMenuItemId = null;
 let editingIngredientId = null;
@@ -81,22 +89,97 @@ document.addEventListener('DOMContentLoaded', () => {
     renderIngredientsTab();
     setupTabSwitching();
     setupMenuSearch();
+    setupCategoryDropdown();
+    setupMenuCategoryDropdown(); // Initialize modal category dropdown
+    setupIngredientMenuDropdown(); // Initialize ingredient dropdown
+    setupStockDropdown(); // Initialize stock dropdown in modal
+
+    // Add-on Init
+    setupAddonSearch();
+    renderAddonsTab();
 });
+
+// ─── Menu Category Dropdown in Modal ───
+function setupMenuCategoryDropdown() {
+    window.toggleMenuCategoryDropdown = () => {
+        document.getElementById('menuCategoryDropdown').classList.toggle('active');
+    };
+
+    window.selectMenuCategory = (value, text) => {
+        document.getElementById('menuItemCategory').value = value;
+        document.getElementById('menuCategorySelected').textContent = text;
+        document.getElementById('menuCategoryDropdown').classList.remove('active');
+    };
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('menuCategoryDropdown');
+        if (dropdown && !dropdown.contains(e.target) && !e.target.closest('.dropdown-trigger-premium')) {
+            dropdown.classList.remove('active');
+        }
+    });
+}
+
+// ─── Dropdown Logic (Copied & Adapted from TakeOrder) ───
+function setupCategoryDropdown() {
+    const categoryDropdown = document.getElementById('categoryDropdown');
+    const categoryTrigger = document.getElementById('categoryTrigger');
+    const selectedCategoryName = document.getElementById('selectedCategoryName');
+    const categoryOptions = document.querySelectorAll('.dropdown-option-premium');
+
+    if (categoryTrigger) {
+        categoryTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            categoryDropdown.classList.toggle('active');
+        });
+    }
+
+    categoryOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const value = option.dataset.value;
+            const text = option.textContent.trim();
+
+            menuFilterCategory = value;
+            selectedCategoryName.textContent = text;
+
+            categoryOptions.forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+
+            categoryDropdown.classList.remove('active');
+            renderMenuGrid(); // Re-render grid on change
+        });
+    });
+
+    document.addEventListener('click', () => {
+        if (categoryDropdown) categoryDropdown.classList.remove('active');
+    });
+}
 
 // ─── Tab Switching ───
 function setupTabSwitching() {
-    document.querySelectorAll('.mc-tab-btn').forEach(btn => {
+    const tabs = document.querySelectorAll('.mc-tab-btn');
+    tabs.forEach(btn => {
         btn.addEventListener('click', () => {
-            const tab = btn.dataset.tab;
-            currentTab = tab;
-
-            document.querySelectorAll('.mc-tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
+            // Remove active from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            // Hide all tab contents
             document.querySelectorAll('.mc-tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
 
-            if (tab === 'ingredients') renderIngredientsTab();
+            // Add active to clicked tab
+            btn.classList.add('active');
+            const tabId = btn.getAttribute('data-tab');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            currentTab = tabId;
+
+            if (tabId === 'menu') {
+                renderMenuTab();
+            } else if (tabId === 'ingredients') {
+                renderIngredientsTab();
+            } else if (tabId === 'addons') {
+                renderAddonsTab();
+            }
         });
     });
 }
@@ -124,14 +207,17 @@ function renderMenuGrid() {
     const grid = document.getElementById('mcMenuGrid');
     if (!grid) return;
 
-    const items = getMenuItems().filter(item =>
-        item.name.toLowerCase().includes(menuSearchQuery)
-    );
+    const items = getMenuItems().filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(menuSearchQuery);
+        const matchesCategory = menuFilterCategory === 'all' || item.category === menuFilterCategory;
+        return matchesSearch && matchesCategory;
+    });
 
     if (items.length === 0) {
         grid.innerHTML = `<div class="mc-empty-state">No menu items found.</div>`;
         return;
     }
+
 
     grid.innerHTML = items.map(item => `
         <div class="mc-menu-card animate-fade-in">
@@ -158,12 +244,19 @@ function renderMenuGrid() {
 }
 
 // ─── Add / Edit Menu Item Modal ───
+// ─── Add / Edit Menu Item Modal ───
 window.openAddMenuModal = () => {
     editingMenuId = null;
     document.getElementById('menuModalTitle').textContent = 'Add Menu Item';
     document.getElementById('menuModalSubmitBtn').textContent = 'Add Item';
     document.getElementById('menuForm').reset();
     document.getElementById('menuImgPreview').src = 'assets/CoffeeBean.png';
+    document.getElementById('menuItemImageBase64').value = 'assets/CoffeeBean.png'; // Default
+
+    // Reset Category Dropdown
+    document.getElementById('menuItemCategory').value = 'coffee';
+    document.getElementById('menuCategorySelected').textContent = 'Coffee';
+
     document.getElementById('menuModalOverlay').classList.add('show');
 };
 
@@ -177,9 +270,23 @@ window.openEditMenuModal = (id) => {
     document.getElementById('menuModalSubmitBtn').textContent = 'Update Item';
     document.getElementById('menuItemName').value = item.name;
     document.getElementById('menuItemPrice').value = item.price;
+
+    // Set Category Dropdown
     document.getElementById('menuItemCategory').value = item.category;
-    document.getElementById('menuItemImage').value = item.image;
+    const categoryMap = {
+        'coffee': 'Coffee',
+        'non-coffee': 'Non-Coffee',
+        'pastries': 'Pastries',
+        'breakfast': 'Breakfast',
+        'apparel': 'Merchandise'
+    };
+    document.getElementById('menuCategorySelected').textContent = categoryMap[item.category] || 'Coffee';
+
+    // Handle Image
+    document.getElementById('menuItemImageFile').value = ''; // Clear file input
+    document.getElementById('menuItemImageBase64').value = item.image;
     document.getElementById('menuImgPreview').src = item.image;
+
     document.getElementById('menuModalOverlay').classList.add('show');
 };
 
@@ -188,9 +295,51 @@ window.closeMenuModal = () => {
     editingMenuId = null;
 };
 
-window.previewMenuImage = () => {
-    const val = document.getElementById('menuItemImage').value;
-    document.getElementById('menuImgPreview').src = val || 'assets/CoffeeBean.png';
+window.handleImageUpload = (input) => {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                // Resize image to max 300x300 to save localStorage space
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const MAX_WIDTH = 300;
+                const MAX_HEIGHT = 300;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                // Fill with white background to prevent black transparent PNGs
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compress
+                document.getElementById('menuImgPreview').src = dataUrl;
+                document.getElementById('menuItemImageBase64').value = dataUrl;
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
 };
 
 window.handleMenuFormSubmit = (e) => {
@@ -198,7 +347,7 @@ window.handleMenuFormSubmit = (e) => {
     const name = document.getElementById('menuItemName').value.trim();
     const price = parseFloat(document.getElementById('menuItemPrice').value);
     const category = document.getElementById('menuItemCategory').value;
-    const image = document.getElementById('menuItemImage').value.trim() || 'assets/CoffeeBean.png';
+    const image = document.getElementById('menuItemImageBase64').value || 'assets/CoffeeBean.png';
 
     if (!name || isNaN(price)) {
         Swal.fire({ icon: 'error', title: 'Invalid Input', text: 'Please fill in all required fields.', confirmButtonColor: '#A67B5B' });
@@ -267,32 +416,91 @@ function renderIngredientsTab() {
     renderIngredientsList();
 }
 
+// ─── Ingredient Menu Dropdown Logic ───
+function setupIngredientMenuDropdown() {
+    const dropdown = document.getElementById('ingredientMenuDropdown');
+    const trigger = document.getElementById('ingredientMenuTrigger');
+
+    if (trigger) {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close other dropdowns if any
+            document.querySelectorAll('.pos-dropdown.active').forEach(d => {
+                if (d !== dropdown) d.classList.remove('active');
+            });
+            dropdown.classList.toggle('active');
+        });
+    }
+
+    // Close on outside click (handled by global listener in setupCategoryDropdown, but ensuring coverage)
+    document.addEventListener('click', (e) => {
+        if (dropdown && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+}
+
 function renderMenuItemDropdown() {
-    const select = document.getElementById('mcIngredientMenuSelect');
-    if (!select) return;
+    const optionsContainer = document.getElementById('ingredientMenuOptions');
+    const selectedNameSpan = document.getElementById('selectedIngredientMenuName');
+
+    if (!optionsContainer) return;
 
     const items = getMenuItems();
-    const currentVal = select.value;
+    optionsContainer.innerHTML = '';
 
-    select.innerHTML = '<option value="">— Select a menu item —</option>';
+    // Add "Select a menu item" placeholder option if needed, or just rely on text
+    // We will render actual items
+
+    if (items.length === 0) {
+        optionsContainer.innerHTML = '<div style="padding:10px; opacity:0.6;">No menu items available</div>';
+        return;
+    }
+
     items.forEach(item => {
-        const opt = document.createElement('option');
-        opt.value = item.id;
-        opt.textContent = `${item.name} (${item.category})`;
-        select.appendChild(opt);
+        const option = document.createElement('div');
+        option.className = 'dropdown-option-premium';
+        if (item.id === selectedMenuItemId) option.classList.add('active');
+
+        // Simple icon for items
+        option.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            ${item.name} <span style="opacity:0.6; font-size:0.8em; margin-left:auto;">${item.category}</span>
+        `;
+
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedMenuItemId = item.id;
+            selectedNameSpan.textContent = item.name;
+
+            document.querySelectorAll('#ingredientMenuOptions .dropdown-option-premium').forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+
+            document.getElementById('ingredientMenuDropdown').classList.remove('active');
+            renderIngredientsList();
+        });
+
+        optionsContainer.appendChild(option);
     });
 
-    // Restore selection if still valid
-    if (currentVal && items.find(i => i.id === currentVal)) {
-        select.value = currentVal;
-        selectedMenuItemId = currentVal;
+    // Restore Selection Display
+    if (selectedMenuItemId) {
+        const selectedItem = items.find(i => i.id === selectedMenuItemId);
+        if (selectedItem) {
+            selectedNameSpan.textContent = selectedItem.name;
+        } else {
+            selectedMenuItemId = null;
+            selectedNameSpan.textContent = "— Select a menu item —";
+        }
+    } else {
+        selectedNameSpan.textContent = "— Select a menu item —";
     }
 }
 
-window.onMenuItemSelect = (selectEl) => {
-    selectedMenuItemId = selectEl.value;
-    renderIngredientsList();
-};
 
 function renderIngredientsList() {
     const panel = document.getElementById('mcIngredientsPanel');
@@ -341,6 +549,90 @@ function renderIngredientsList() {
     `).join('');
 }
 
+// ─── Populate stock dropdown ───
+// ─── Stock Dropdown Logic ───
+function setupStockDropdown() {
+    const dropdown = document.getElementById('ingredientStockDropdown');
+    const trigger = document.getElementById('ingredientStockTrigger');
+
+    if (trigger) {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close other dropdowns
+            document.querySelectorAll('.pos-dropdown.active').forEach(d => {
+                if (d !== dropdown) d.classList.remove('active');
+            });
+            dropdown.classList.toggle('active');
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (dropdown && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+}
+
+// ─── Populate stock dropdown ───
+function populateStockDropdown(selectedStockPid) {
+    const optionsContainer = document.getElementById('ingredientStockOptions');
+    const selectedStockName = document.getElementById('selectedStockName');
+    const hiddenInput = document.getElementById('ingredientStockSelect');
+
+    if (!optionsContainer) return;
+
+    const stocks = getStockItems();
+    optionsContainer.innerHTML = '';
+    hiddenInput.value = ''; // Reset hidden input
+    selectedStockName.textContent = "— Choose from stocks —";
+
+    if (stocks.length === 0) {
+        optionsContainer.innerHTML = '<div style="padding:10px; opacity:0.6;">No stock items found — add them in Stocks page</div>';
+        return;
+    }
+
+    stocks.forEach(s => {
+        const option = document.createElement('div');
+        option.className = 'dropdown-option-premium';
+        if (s.product_id === selectedStockPid) {
+            option.classList.add('active');
+            selectedStockName.textContent = s.item_name;
+            hiddenInput.value = s.product_id;
+            // Also trigger unit update if re-opening edit modal
+            const unitField = document.getElementById('ingredientUnit');
+            if (unitField) unitField.value = s.unit || '';
+        }
+
+        option.innerHTML = `
+            <div style="display:flex; flex-direction:column; line-height:1.2;">
+                <span style="font-weight:600;">${s.item_name}</span>
+                <span style="font-size:0.8em; opacity:0.7;">${s.quantity} ${s.unit} available</span>
+            </div>
+        `;
+
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            // Update UI
+            document.querySelectorAll('#ingredientStockOptions .dropdown-option-premium').forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+            selectedStockName.textContent = s.item_name;
+
+            // Update Hidden Input
+            hiddenInput.value = s.product_id;
+
+            // Auto-fill Unit
+            const unitField = document.getElementById('ingredientUnit');
+            if (unitField) unitField.value = s.unit || '';
+
+            // Close Dropdown
+            document.getElementById('ingredientStockDropdown').classList.remove('active');
+        });
+
+        optionsContainer.appendChild(option);
+    });
+}
+
 // ─── Add / Edit Ingredient Modal ───
 window.openAddIngredientModal = () => {
     if (!selectedMenuItemId) return;
@@ -348,6 +640,8 @@ window.openAddIngredientModal = () => {
     document.getElementById('ingredientModalTitle').textContent = 'Add Ingredient';
     document.getElementById('ingredientModalSubmitBtn').textContent = 'Add';
     document.getElementById('ingredientForm').reset();
+    document.getElementById('ingredientUnit').value = '';
+    populateStockDropdown(null);
     document.getElementById('ingredientModalOverlay').classList.add('show');
 };
 
@@ -361,7 +655,7 @@ window.openEditIngredientModal = (ingId) => {
     editingIngredientId = ingId;
     document.getElementById('ingredientModalTitle').textContent = 'Edit Ingredient';
     document.getElementById('ingredientModalSubmitBtn').textContent = 'Update';
-    document.getElementById('ingredientName').value = ing.name;
+    populateStockDropdown(ing.stockPid || null);
     document.getElementById('ingredientQty').value = ing.quantity;
     document.getElementById('ingredientUnit').value = ing.unit;
     document.getElementById('ingredientModalOverlay').classList.add('show');
@@ -374,12 +668,18 @@ window.closeIngredientModal = () => {
 
 window.handleIngredientFormSubmit = (e) => {
     e.preventDefault();
-    const name = document.getElementById('ingredientName').value.trim();
+    const stockPid = document.getElementById('ingredientStockSelect').value;
+
+    // Find stock name from stock ID
+    const stocks = getStockItems();
+    const stockItem = stocks.find(s => s.product_id === stockPid);
+    const name = stockItem ? stockItem.item_name : '';
+
     const quantity = parseFloat(document.getElementById('ingredientQty').value);
     const unit = document.getElementById('ingredientUnit').value;
 
-    if (!name || isNaN(quantity) || quantity <= 0) {
-        Swal.fire({ icon: 'error', title: 'Invalid', text: 'Please fill in all fields correctly.', confirmButtonColor: '#A67B5B' });
+    if (!stockPid || !name || isNaN(quantity) || quantity <= 0) {
+        Swal.fire({ icon: 'error', title: 'Invalid', text: 'Please select a stock item and enter a valid quantity.', confirmButtonColor: '#A67B5B' });
         return;
     }
 
@@ -390,6 +690,7 @@ window.handleIngredientFormSubmit = (e) => {
         const idx = allIngredients[selectedMenuItemId].findIndex(i => i.id === editingIngredientId);
         if (idx !== -1) {
             allIngredients[selectedMenuItemId][idx].name = name;
+            allIngredients[selectedMenuItemId][idx].stockPid = stockPid;
             allIngredients[selectedMenuItemId][idx].quantity = quantity;
             allIngredients[selectedMenuItemId][idx].unit = unit;
         }
@@ -397,6 +698,7 @@ window.handleIngredientFormSubmit = (e) => {
     } else {
         allIngredients[selectedMenuItemId].push({
             id: generateIngredientId(),
+            stockPid,
             name,
             quantity,
             unit
@@ -429,3 +731,220 @@ window.deleteIngredient = (ingId) => {
         }
     });
 };
+// ─── Customize Add-ons Logic ───
+
+const LS_ADDONS_KEY = 'brewcave_addons';
+
+function getAddons() {
+    return JSON.parse(localStorage.getItem(LS_ADDONS_KEY)) || [];
+}
+
+function saveAddons(addons) {
+    localStorage.setItem(LS_ADDONS_KEY, JSON.stringify(addons));
+}
+
+function generateAddonId() {
+    return 'addon_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+}
+
+// State for Add-ons
+let addonSearchQuery = '';
+
+// Add to Initialization
+// (Note: You should call renderAddonsTab() and setupAddonSearch() in the main DOMContentLoaded listener manually if replacing whole file, 
+//  but since we are appending, we need to make sure these are called or hooked up. 
+//  The existing DOMContentLoaded is at the top. We might need to patch it or just rely on tab click.)
+
+function renderAddonsTab() {
+    const grid = document.getElementById('mcAddonGrid');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    const addons = getAddons();
+    const filtered = addons.filter(item =>
+        item.name.toLowerCase().includes(addonSearchQuery.toLowerCase())
+    );
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `
+            <div class="no-results">
+                <p>No add-ons found.</p>
+                ${addonSearchQuery ? '' : '<button class="mc-btn-primary" onclick="openAddAddonModal()">Create First Add-on</button>'}
+            </div>
+        `;
+        return;
+    }
+
+    filtered.forEach(addon => {
+        const card = document.createElement('div');
+        card.className = 'mc-addon-card';
+        card.innerHTML = `
+            <div class="mc-addon-info">
+                <div class="mc-addon-header">
+                    <h3 class="mc-addon-name">${addon.name}</h3>
+                    <span class="mc-addon-price">₱${parseFloat(addon.price).toFixed(2)}</span>
+                </div>
+                <div class="mc-addon-details">
+                    <span class="mc-addon-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        ${addon.applicableItems ? addon.applicableItems.length : 0} items linked
+                    </span>
+                </div>
+            </div>
+            <div class="mc-addon-actions">
+                <button class="mc-icon-btn edit" onclick="openEditAddonModal('${addon.id}')" title="Edit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button class="mc-icon-btn delete" onclick="deleteAddon('${addon.id}')" title="Delete">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function setupAddonSearch() {
+    const searchInput = document.getElementById('mcAddonSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            addonSearchQuery = e.target.value;
+            renderAddonsTab();
+        });
+    }
+}
+
+// Modal Logic
+function openAddAddonModal() {
+    const modal = document.getElementById('addonModal');
+    const form = document.getElementById('addonForm');
+    document.getElementById('addonModalTitle').textContent = 'Add New Add-on';
+    document.getElementById('editAddonId').value = '';
+    form.reset();
+    renderApplicableItemsCheckboxes();
+    modal.classList.add('show');
+}
+
+function openEditAddonModal(id) {
+    const addons = getAddons();
+    const addon = addons.find(a => a.id === id);
+    if (!addon) return;
+
+    const modal = document.getElementById('addonModal');
+    document.getElementById('addonModalTitle').textContent = 'Edit Add-on';
+    document.getElementById('editAddonId').value = addon.id;
+    document.getElementById('addonName').value = addon.name;
+    document.getElementById('addonPrice').value = addon.price;
+
+    renderApplicableItemsCheckboxes(addon.applicableItems || []);
+
+    modal.classList.add('show');
+}
+
+function closeAddonModal() {
+    document.getElementById('addonModal').classList.remove('show');
+}
+
+function renderApplicableItemsCheckboxes(selectedIds = []) {
+    const container = document.getElementById('addonApplicableItems');
+    container.innerHTML = '';
+    const menuItems = getMenuItems(); // From existing logic
+
+    if (menuItems.length === 0) {
+        container.innerHTML = '<p style="font-size: 0.9rem; opacity: 0.7; padding: 10px;">No menu items available.</p>';
+        return;
+    }
+
+    // Sort items by name for better findability
+    menuItems.sort((a, b) => a.name.localeCompare(b.name));
+
+    menuItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'mc-addon-option';
+
+        const isChecked = selectedIds.includes(item.id) ? 'checked' : '';
+
+        div.innerHTML = `
+            <input type="checkbox" id="link_${item.id}" value="${item.id}" ${isChecked}>
+            <label class="mc-addon-chip" for="link_${item.id}">
+                ${item.name}
+            </label>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function handleAddonFormSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('editAddonId').value;
+    const name = document.getElementById('addonName').value;
+    const price = parseFloat(document.getElementById('addonPrice').value);
+
+    // Get selected items
+    const checkboxes = document.querySelectorAll('#addonApplicableItems input[type="checkbox"]:checked');
+    const applicableItems = Array.from(checkboxes).map(cb => cb.value);
+
+    let addons = getAddons();
+
+    if (id) {
+        // Edit
+        const index = addons.findIndex(a => a.id === id);
+        if (index !== -1) {
+            addons[index] = { ...addons[index], name, price, applicableItems };
+        }
+    } else {
+        // Add
+        const newAddon = {
+            id: generateAddonId(),
+            name,
+            price,
+            applicableItems
+        };
+        addons.push(newAddon);
+    }
+
+    saveAddons(addons);
+    closeAddonModal();
+    renderAddonsTab();
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Saved!',
+        text: 'Add-on has been saved successfully.',
+        timer: 1500,
+        showConfirmButton: false,
+        theme: 'auto',
+        background: 'var(--card-bg)',
+        color: 'var(--text-color)'
+    });
+}
+
+function deleteAddon(id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        background: 'var(--card-bg)',
+        color: 'var(--text-color)'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let addons = getAddons();
+            addons = addons.filter(a => a.id !== id);
+            saveAddons(addons);
+            renderAddonsTab();
+            Swal.fire({
+                title: 'Deleted!',
+                text: 'Add-on has been deleted.',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false,
+                background: 'var(--card-bg)',
+                color: 'var(--text-color)'
+            });
+        }
+    });
+}

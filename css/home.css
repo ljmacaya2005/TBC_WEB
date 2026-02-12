@@ -2406,3 +2406,65 @@ div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
 	background: rgba(0, 0, 0, 0.2);
 	border-color: rgba(255, 255, 255, 0.1);
 }
+
+/* Mobile/Tablet Minimized Sidebar Logic */
+@media (max-width: 991px) {
+
+	.home-main-content,
+	.pos-container {
+		margin-left: 0 !important;
+		transition: margin-left 0.3s ease;
+		width: 100% !important;
+	}
+
+	/* When sidebar is active */
+	.sidebar.active {
+		width: 70px !important;
+		transform: translateX(0) !important;
+		background: var(--sidebar-bg);
+		/* Ensure background is visible */
+		z-index: 1001;
+		/* Ensure above content */
+	}
+
+	/* Adjust main content when sidebar is active */
+	.sidebar.active~.home-main-content,
+	.sidebar.active~.pos-container {
+		margin-left: 70px !important;
+		width: calc(100% - 70px) !important;
+	}
+
+	/* Minimized Sidebar Styling */
+	.sidebar.active .brand-text,
+	.sidebar.active .sidebar-brand .dropdown-arrow,
+	.sidebar.active .version-island-sidebar,
+	.sidebar.active .nav-link span,
+	.sidebar.active .sidebar-footer .btn-signout span {
+		display: none !important;
+	}
+
+	.sidebar.active .sidebar-brand {
+		justify-content: center;
+		padding: 15px 5px;
+	}
+
+	.sidebar.active .nav-link {
+		justify-content: center;
+		padding: 15px;
+	}
+
+	.sidebar.active .nav-icon {
+		margin-right: 0;
+		width: 24px;
+		height: 24px;
+	}
+
+	.sidebar.active .sidebar-footer {
+		padding: 10px 5px;
+	}
+
+	.sidebar.active .btn-signout {
+		padding: 10px;
+		justify-content: center;
+	}
+}

@@ -43,7 +43,7 @@
       element.classList.remove('active')
     })
     activeThemeItem?.classList.add('active');
-    
+
     // Update toggle button icon
     if (themeToggleButton) {
       themeToggleButton.innerHTML = ICONS[theme] || ICONS.auto;
@@ -95,14 +95,9 @@
     // Mobile menu toggle
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('sidebar');
-    const sidebarClose = document.getElementById('sidebarClose');
 
     mobileMenuToggle?.addEventListener('click', () => {
       sidebar?.classList.toggle('active');
-    });
-
-    sidebarClose?.addEventListener('click', () => {
-      sidebar?.classList.remove('active');
     });
 
     // Close sidebar when clicking on nav links
@@ -125,7 +120,7 @@
     document.addEventListener('click', (event) => {
       const isClickInsideSidebar = sidebar?.contains(event.target);
       const isClickOnToggle = mobileMenuToggle?.contains(event.target);
-      
+
       if (!isClickInsideSidebar && !isClickOnToggle) {
         sidebar?.classList.remove('active');
       }
@@ -149,7 +144,7 @@
           localStorage.removeItem('isLoggedIn');
           localStorage.removeItem('username');
           localStorage.removeItem('theme');
-          
+
           // Show success message and redirect
           Swal.fire({
             title: 'Signed Out',
