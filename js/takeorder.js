@@ -501,6 +501,8 @@ window.processPayment = () => {
     const amountTendered = parseFloat(document.getElementById('payTendered').value) || 0;
     const totalStr = document.getElementById('payTotal').value.replace(/[^\d.]/g, '');
     const total = parseFloat(totalStr) || 0;
+    const paymentMethod = document.getElementById('payMethod').value;
+    const refNo = document.getElementById('payRefNo').value || '-';
 
     if (amountTendered < total) {
         Swal.fire({
@@ -516,6 +518,30 @@ window.processPayment = () => {
     deductStocksForCart();
 
     if (typeof closePaymentModal === 'function') closePaymentModal();
+
+    // --- SAVE ORDER TO LOCAL STORAGE ---
+    const orderId = 'ORD-' + Date.now().toString().slice(-6); // Simple ID generation
+    const date = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
+
+    // Create items summary string
+    const itemsSummary = cart.map(item => `${item.qty}x ${item.name}`).join(', ');
+
+    const newOrder = {
+        id: orderId,
+        date: date,
+        items: itemsSummary,
+        payment: paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1), // Capitalize
+        change: '₱' + (amountTendered - total).toFixed(2),
+        ref: refNo,
+        total: '₱' + total.toFixed(2),
+        status: 'Pending',
+        customer: customer
+    };
+
+    const existingOrders = JSON.parse(localStorage.getItem('brewcave_orders')) || [];
+    existingOrders.unshift(newOrder); // Add to beginning
+    localStorage.setItem('brewcave_orders', JSON.stringify(existingOrders));
+    // -----------------------------------
 
     Swal.fire({
         title: 'Payment Successful!',

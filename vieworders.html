@@ -442,7 +442,7 @@
 					<line x1="12" y1="16" x2="12" y2="12"></line>
 					<line x1="12" y1="8" x2="12.01" y2="8"></line>
 				</svg>
-				<span class="version-text">System v4.3</span>
+				<span class="version-text">System v5.2</span>
 			</div>
 		</aside>
 
@@ -498,16 +498,23 @@
 			</header>
 
 			<div class="home-container">
-				<div class="action-bar"
-					style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-					<div class="search-bar-wrapper">
+				<div class="orders-toolbar glass-panel">
+					<div class="status-tabs" id="statusTabs">
+						<button class="status-tab active" data-status="all">All Orders</button>
+						<button class="status-tab" data-status="pending">Pending</button>
+						<button class="status-tab" data-status="preparing">Preparing</button>
+						<button class="status-tab" data-status="completed">Completed</button>
+						<button class="status-tab" data-status="cancelled">Cancelled</button>
+					</div>
+
+					<div class="search-bar-wrapper premium-search">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
 							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
 							class="search-icon">
 							<circle cx="11" cy="11" r="8"></circle>
 							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
 						</svg>
-						<input type="text" placeholder="Search orders..." class="search-input">
+						<input type="text" id="orderSearchInput" placeholder="Search orders..." class="search-input">
 					</div>
 				</div>
 

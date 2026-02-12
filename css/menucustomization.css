@@ -638,6 +638,28 @@
 }
 
 
+
+/* ─── Modal Dividers & Sections ─── */
+.mc-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 25px 0;
+}
+
+[data-theme="dark"] .mc-divider {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.mc-section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #A67B5B;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
 /* ─── Premium Add-on Selection Grid ─── */
 .mc-addon-selection-grid {
     display: grid;

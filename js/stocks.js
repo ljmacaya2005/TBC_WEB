@@ -34,22 +34,41 @@ function calcStatus(qty) {
 // ─── State ───
 let editingStockId = null;
 let searchQuery = '';
+let currentStatus = 'all';
+let lastRenderedHTML = ''; // To prevent blinking
 
 // ─── Initialization ───
 document.addEventListener('DOMContentLoaded', () => {
-    getStocks(); // seed if needed
     renderStocks();
     setupSearch();
+    setupStatusTabs();
 });
 
 function setupSearch() {
-    const input = document.querySelector('.search-input');
+    const input = document.getElementById('stockSearchInput');
     if (input) {
         input.addEventListener('input', (e) => {
-            searchQuery = e.target.value.toLowerCase();
+            searchQuery = e.target.value.toLowerCase().trim();
+            // Force re-render on search (ignore anti-blink)
+            lastRenderedHTML = '';
             renderStocks();
         });
     }
+}
+
+function setupStatusTabs() {
+    const tabs = document.querySelectorAll('.status-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            currentStatus = tab.dataset.status;
+            // Force re-render on tab switch
+            lastRenderedHTML = '';
+            renderStocks();
+        });
+    });
 }
 
 // ─── Render ───
@@ -57,39 +76,81 @@ function renderStocks() {
     const list = document.getElementById('stocksList');
     if (!list) return;
 
-    const stocks = getStocks().filter(item =>
-        item.item_name.toLowerCase().includes(searchQuery) ||
-        item.product_id.toLowerCase().includes(searchQuery) ||
-        item.category.toLowerCase().includes(searchQuery)
-    );
+    let stocks = getStocks();
 
-    if (stocks.length === 0) {
-        list.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px; opacity: 0.5;">No inventory data available.</td></tr>`;
-        return;
+    // 1. Filter by Status
+    if (currentStatus !== 'all') {
+        stocks = stocks.filter(item => {
+            const status = calcStatus(item.quantity).toLowerCase();
+            return status === currentStatus;
+        });
     }
 
-    list.innerHTML = stocks.map(item => {
-        // Recalculate status live
-        const status = calcStatus(item.quantity);
-        return `
-        <tr class="animate-fade-in">
-            <td style="font-family: monospace;">${item.product_id}</td>
-            <td style="font-weight: 500;">${item.item_name}</td>
-            <td>${item.category}</td>
-            <td>${item.created_at}</td>
-            <td style="${item.quantity <= LOW_STOCK_THRESHOLD ? 'color: #e74c3c; font-weight: bold;' : ''}">${item.quantity}</td>
-            <td>${item.unit}</td>
-            <td><span class="status-badge status-${status.toLowerCase().replace(/ /g, '-')}">${status}</span></td>
-            <td>
-                <button class="btn-icon" title="Edit" onclick="editStock('${item.product_id}')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                </button>
-                <button class="btn-icon" title="Delete" onclick="deleteStock('${item.product_id}')" style="color: #e74c3c;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                </button>
-            </td>
-        </tr>`;
-    }).join('');
+    // 2. Filter by Search Query
+    if (searchQuery) {
+        stocks = stocks.filter(item =>
+            item.item_name.toLowerCase().includes(searchQuery) ||
+            item.product_id.toLowerCase().includes(searchQuery) ||
+            item.category.toLowerCase().includes(searchQuery)
+        );
+    }
+
+    let htmlContent = '';
+
+    if (stocks.length === 0) {
+        const message = searchQuery
+            ? `No "${currentStatus}" items match your search.`
+            : `No items found in "${currentStatus}" category.`;
+
+        htmlContent = `<tr><td colspan="8" style="text-align:center; padding: 60px; opacity: 0.5;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                ${message}
+            </div>
+        </td></tr>`;
+    } else {
+        htmlContent = stocks.map(item => {
+            const status = calcStatus(item.quantity);
+            const statusClass = status.toLowerCase().replace(/ /g, '-');
+
+            return `
+            <tr style="animation: fadeIn 0.3s ease forwards;">
+                <td data-label="Product ID" style="font-family: monospace; font-weight: 600; color: var(--accent-color);">${item.product_id}</td>
+                <td data-label="Item Name" style="font-weight: 700;">${item.item_name}</td>
+                <td data-label="Category" style="opacity: 0.8;">${item.category}</td>
+                <td data-label="Created At" style="font-size: 0.85rem; opacity: 0.6;">${item.created_at}</td>
+                <td data-label="Quantity">
+                    <span style="${item.quantity <= LOW_STOCK_THRESHOLD ? 'color: #e74c3c; font-weight: 800;' : 'font-weight: 600;'}">
+                        ${item.quantity}
+                    </span>
+                </td>
+                <td data-label="Unit" style="opacity: 0.8;">${item.unit}</td>
+                <td data-label="Status">
+                    <span class="status-badge status-${statusClass}">${status}</span>
+                </td>
+                <td data-label="Actions">
+                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                        <button class="btn-icon" title="Edit" onclick="editStock('${item.product_id}')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="btn-icon" title="Delete" onclick="deleteStock('${item.product_id}')" style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; border-color: rgba(231, 76, 60, 0.2);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    // Anti-Blink Logic
+    if (htmlContent !== lastRenderedHTML) {
+        list.innerHTML = htmlContent;
+        lastRenderedHTML = htmlContent;
+    }
 }
 
 // ─── Modal ───

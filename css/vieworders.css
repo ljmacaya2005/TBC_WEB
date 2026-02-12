@@ -1,268 +1,303 @@
-/* View Orders Stylings */
+/* View Orders Stylings - Premium Redesign */
 
-.orders-container {
-    background: var(--card-bg, #fff);
-    /* Fallback to white if var missing */
-    border-radius: 20px;
-    padding: 20px;
-    margin: 20px auto;
-    width: 100%;
-    /* Force full width */
-    max-width: 100%;
-    /* Remove restriction */
-
-    /* "Floating" Realism - Realistic Shadow */
-    box-shadow:
-        0 10px 30px -5px rgba(0, 0, 0, 0.1),
-        0 8px 10px -5px rgba(0, 0, 0, 0.05);
-    /* Soft grounded shadow */
-
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    /* Subtle border definition */
-
-    /* Ensure no continuous animation */
-    animation: none !important;
-    transform: none !important;
-    transition: box-shadow 0.3s ease;
-    /* Only transition on interaction if needed */
+/* Toolbar (Tabs + Search) */
+.orders-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background: var(--card-bg, rgba(255, 255, 255, 0.05));
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-/* Optional hover effect for the container itself to feel interactive but stable */
-.orders-container:hover {
+.status-tabs {
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    border-radius: 12px;
+}
+
+.status-tab {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.status-tab:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.status-tab.active {
+    background: var(--card-bg, #fff);
+    color: var(--accent-color, #A67B5B);
+    font-weight: 700;
+    opacity: 1;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.premium-search {
+    position: relative;
+    max-width: 300px;
+    width: 100%;
+}
+
+.premium-search .search-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    padding: 10px 20px 10px 40px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.premium-search .search-input:focus {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(166, 123, 91, 0.2);
+    outline: none;
+}
+
+.premium-search .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Orders Container */
+.orders-container {
+    background: var(--card-bg, #fff);
+    border-radius: 24px;
+    padding: 0;
+    /* Padding handling inside table for edge-to-edge feel */
+    margin: 0 auto;
+    width: 100%;
+    max-width: 100%;
     box-shadow:
-        0 20px 40px -5px rgba(0, 0, 0, 0.12),
-        0 10px 15px -5px rgba(0, 0, 0, 0.06);
+        0 20px 50px -10px rgba(0, 0, 0, 0.15),
+        0 10px 20px -10px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--glass-border);
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    /* Contain table corners */
+    animation: none !important;
 }
 
 .orders-table {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+    border-collapse: separate;
+    /* For border-radius on rows */
+    border-spacing: 0 4px;
+    /* Spacing between rows */
+    padding: 0 15px 15px;
+    /* Side padding for the table body */
 }
 
 .orders-table th {
     text-align: left;
-    padding: 20px;
-    font-weight: 700;
-    color: var(--text-color, #333);
-    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
-    font-size: 0.95rem;
+    padding: 20px 15px;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    opacity: 0.7;
+    position: sticky;
+    top: 0;
+    background: var(--card-bg);
+    /* Matches container to cover scrolling content */
+    z-index: 10;
+    backdrop-filter: blur(10px);
 }
 
-.orders-table td {
-    padding: 20px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
-    vertical-align: middle;
-    color: var(--text-color, #555);
-}
-
-.orders-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* Row hover effect */
 .orders-table tbody tr {
-    transition: background-color 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
 }
 
 .orders-table tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+    transform: scale(1.005);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 5;
 }
 
-/* Empty State Styling */
+.orders-table td {
+    padding: 20px 15px;
+    vertical-align: middle;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+}
+
+.orders-table tbody tr td:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.orders-table tbody tr td:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+/* Empty State */
 #ordersList td {
     text-align: center;
     padding: 60px;
-    color: #888;
+    color: var(--text-color);
+    opacity: 0.6;
     font-style: italic;
+    background: none !important;
+    box-shadow: none !important;
 }
 
 /* Status Badges */
 .status-badge {
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
 }
 
 .status-pending {
-    background: #fff3cd;
-    color: #856404;
+    background: rgba(241, 196, 15, 0.15);
+    color: #f1c40f;
+    border-color: rgba(241, 196, 15, 0.2);
+}
+
+.status-preparing {
+    background: rgba(52, 152, 219, 0.15);
+    color: #3498db;
+    border-color: rgba(52, 152, 219, 0.2);
 }
 
 .status-completed {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+    border-color: rgba(46, 204, 113, 0.2);
 }
 
 .status-cancelled {
-    background: #f8d7da;
-    color: #721c24;
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.2);
 }
 
-/* Responsive Table */
-@media (max-width: 768px) {
-    .orders-container {
-        padding: 20px;
-        margin: 10px;
-    }
-
-    .orders-table th,
-    .orders-table td {
-        padding: 12px;
-        font-size: 0.9rem;
-    }
-}
-
-/* --- Buttons --- */
-.btn-primary {
+/* Action Buttons */
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-color);
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: var(--accent-color, #A67B5B);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-    border-left: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%);
-    transform: skewX(-25deg);
-    transition: 0.6s;
-    pointer-events: none;
-}
-
-.btn-primary:hover::before {
-    left: 150%;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    filter: brightness(1.1);
-}
-
-.btn-secondary {
-    padding: 10px 20px;
-    border-radius: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    border-left: 1px solid rgba(255, 255, 255, 0.2);
-    cursor: pointer;
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--text-color);
-    font-weight: 500;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-}
-
-.btn-secondary:hover {
-    background: rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
-}
-
-/* Table Action Buttons */
-.btn-edit,
-.btn-delete,
-.btn-done,
-.btn-cancel {
-    padding: 10px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.4);
-    border-left: 1px solid rgba(255, 255, 255, 0.4);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: inline-flex;
-    align-items: center;
     justify-content: center;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    font-weight: 700;
-    font-size: 0.9rem;
-    gap: 8px;
-    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.btn-edit::before,
-.btn-delete::before,
-.btn-done::before,
-.btn-cancel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
-    transform: skewX(-25deg);
-    transition: 0.6s;
-    pointer-events: none;
-}
-
-.btn-edit {
-    background: linear-gradient(135deg, rgba(166, 123, 91, 0.2), rgba(166, 123, 91, 0.1));
-    color: var(--accent-color, #A67B5B);
-}
-
-.btn-done {
-    background: linear-gradient(135deg, rgba(39, 174, 96, 0.2), rgba(39, 174, 96, 0.1));
-    color: #27ae60;
-}
-
-.btn-cancel,
-.btn-delete {
-    background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.1));
-    color: #e74c3c;
-}
-
-.btn-edit:hover::before,
-.btn-delete:hover::before,
-.btn-done:hover::before,
-.btn-cancel:hover::before {
-    left: 150%;
-}
-
-.btn-edit:hover {
-    background: var(--accent-color, #A67B5B);
-    color: white !important;
+.btn-icon:hover {
+    background: var(--accent-color);
+    color: #fff !important;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(166, 123, 91, 0.4);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.btn-done:hover {
-    background: #27ae60;
-    color: white !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
+.btn-icon svg {
+    color: inherit !important;
+    /* Override inline styles */
 }
 
-.btn-cancel:hover,
-.btn-delete:hover {
-    background: #e74c3c;
-    color: white !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+/* Responsive */
+@media (max-width: 900px) {
+    .orders-toolbar {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .status-tabs {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .premium-search {
+        max-width: 100%;
+    }
+
+    .orders-table {
+        display: block;
+    }
+
+    .orders-table thead {
+        display: none;
+    }
+
+    .orders-table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .orders-table tbody tr {
+        display: flex;
+        flex-direction: column;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .orders-table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border: none;
+        border-radius: 0 !important;
+        text-align: right;
+    }
+
+    .orders-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        opacity: 0.7;
+        margin-right: 20px;
+        text-align: left;
+    }
 }

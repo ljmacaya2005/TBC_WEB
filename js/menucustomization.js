@@ -90,12 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabSwitching();
     setupMenuSearch();
     setupCategoryDropdown();
-    setupMenuCategoryDropdown(); // Initialize modal category dropdown
     setupIngredientMenuDropdown(); // Initialize ingredient dropdown
     setupStockDropdown(); // Initialize stock dropdown in modal
 
     // Add-on Init
     setupAddonSearch();
+    setupAddonStockDropdown(); // Initialize stock dropdown for addons
     renderAddonsTab();
 });
 
@@ -822,6 +822,12 @@ function openAddAddonModal() {
     document.getElementById('editAddonId').value = '';
     form.reset();
     renderApplicableItemsCheckboxes();
+
+    // Reset Stock Deduction Fields
+    populateAddonStockDropdown(null);
+    document.getElementById('addonStockQty').value = '';
+    document.getElementById('addonStockUnit').value = '';
+
     modal.classList.add('show');
 }
 
@@ -837,6 +843,11 @@ function openEditAddonModal(id) {
     document.getElementById('addonPrice').value = addon.price;
 
     renderApplicableItemsCheckboxes(addon.applicableItems || []);
+
+    // Load Stock Deduction Fields
+    populateAddonStockDropdown(addon.stockPid || null);
+    document.getElementById('addonStockQty').value = addon.stockQty || '';
+    document.getElementById('addonStockUnit').value = addon.stockUnit || '';
 
     modal.classList.add('show');
 }
@@ -884,13 +895,18 @@ function handleAddonFormSubmit(e) {
     const checkboxes = document.querySelectorAll('#addonApplicableItems input[type="checkbox"]:checked');
     const applicableItems = Array.from(checkboxes).map(cb => cb.value);
 
+    // Get stock deduction data
+    const stockPid = document.getElementById('addonStockPid').value;
+    const stockQty = parseFloat(document.getElementById('addonStockQty').value) || 0;
+    const stockUnit = document.getElementById('addonStockUnit').value.trim();
+
     let addons = getAddons();
 
     if (id) {
         // Edit
         const index = addons.findIndex(a => a.id === id);
         if (index !== -1) {
-            addons[index] = { ...addons[index], name, price, applicableItems };
+            addons[index] = { ...addons[index], name, price, applicableItems, stockPid, stockQty, stockUnit };
         }
     } else {
         // Add
@@ -898,7 +914,10 @@ function handleAddonFormSubmit(e) {
             id: generateAddonId(),
             name,
             price,
-            applicableItems
+            applicableItems,
+            stockPid,
+            stockQty,
+            stockUnit
         };
         addons.push(newAddon);
     }
@@ -946,5 +965,88 @@ function deleteAddon(id) {
                 color: 'var(--text-color)'
             });
         }
+    });
+}
+
+// ─── Add-on Stock Dropdown Logic ───
+function setupAddonStockDropdown() {
+    const dropdown = document.getElementById('addonStockDropdown');
+    const trigger = document.getElementById('addonStockTrigger');
+
+    if (trigger) {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close other dropdowns
+            document.querySelectorAll('.pos-dropdown.active').forEach(d => {
+                if (d !== dropdown) d.classList.remove('active');
+            });
+            dropdown.classList.toggle('active');
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (dropdown && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+}
+
+function populateAddonStockDropdown(selectedStockPid) {
+    const optionsContainer = document.getElementById('addonStockOptions');
+    const selectedStockName = document.getElementById('selectedAddonStockName');
+    const hiddenInput = document.getElementById('addonStockPid');
+
+    if (!optionsContainer) return;
+
+    const stocks = getStockItems();
+    optionsContainer.innerHTML = '';
+    if (hiddenInput) hiddenInput.value = ''; // Reset hidden input
+    if (selectedStockName) selectedStockName.textContent = "— Select Stock Item —";
+
+    if (stocks.length === 0) {
+        optionsContainer.innerHTML = '<div style="padding:10px; opacity:0.6;">No stock items found — add them in Stocks page</div>';
+        return;
+    }
+
+    stocks.forEach(s => {
+        const option = document.createElement('div');
+        option.className = 'dropdown-option-premium';
+        if (s.product_id === selectedStockPid) {
+            option.classList.add('active');
+            if (selectedStockName) selectedStockName.textContent = s.item_name;
+            if (hiddenInput) hiddenInput.value = s.product_id;
+
+            // Auto-fill unit if empty/not set
+            const unitField = document.getElementById('addonStockUnit');
+            if (unitField && !unitField.value) unitField.value = s.unit || '';
+        }
+
+        option.innerHTML = `
+            <div style="display:flex; flex-direction:column; line-height:1.2;">
+                <span style="font-weight:600;">${s.item_name}</span>
+                <span style="font-size:0.8em; opacity:0.7;">${s.quantity} ${s.unit} available</span>
+            </div>
+        `;
+
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            // Update UI
+            document.querySelectorAll('#addonStockOptions .dropdown-option-premium').forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+            if (selectedStockName) selectedStockName.textContent = s.item_name;
+
+            // Update Hidden Input
+            if (hiddenInput) hiddenInput.value = s.product_id;
+
+            // Auto-fill Unit
+            const unitField = document.getElementById('addonStockUnit');
+            if (unitField) unitField.value = s.unit || '';
+
+            // Close Dropdown
+            document.getElementById('addonStockDropdown').classList.remove('active');
+        });
+
+        optionsContainer.appendChild(option);
     });
 }

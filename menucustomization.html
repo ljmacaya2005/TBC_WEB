@@ -392,7 +392,7 @@
                     <line x1="12" y1="16" x2="12" y2="12"></line>
                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
                 </svg>
-                <span class="version-text">System v4.3</span>
+                <span class="version-text">System v5.2</span>
             </div>
         </aside>
 
@@ -703,6 +703,41 @@
                     <label>Applicable Menu Items</label>
                     <div class="mc-addon-selection-grid" id="addonApplicableItems">
                         <!-- Items rendered by JS as selectable chips -->
+                    </div>
+                </div>
+
+                <div class="mc-divider"></div>
+                <div class="mc-section-title">Stock Deduction</div>
+
+                <div class="form-group">
+                    <label>Deduct from Stock</label>
+                    <div class="pos-dropdown" id="addonStockDropdown" style="width: 100%;">
+                        <div class="dropdown-trigger-premium" id="addonStockTrigger">
+                            <span id="selectedAddonStockName">— Select Stock Item —</span>
+                            <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <input type="hidden" id="addonStockPid">
+                        <div class="dropdown-menu-premium" id="addonStockOptions"
+                            style="max-height: 200px; overflow-y: auto;">
+                            <!-- Options rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mc-form-row">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Deduction Quantity</label>
+                        <input type="number" id="addonStockQty" class="form-control-premium" step="0.01" min="0"
+                            placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Unit (Measure)</label>
+                        <input type="text" id="addonStockUnit" class="form-control-premium"
+                            placeholder="e.g. ml, g, pcs">
                     </div>
                 </div>
 

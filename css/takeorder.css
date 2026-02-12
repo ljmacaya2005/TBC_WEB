@@ -779,3 +779,8 @@ div:where(.swal2-container).swal2-bottom>.swal2-popup.mobile-toast-popup {
     background: rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
 }
+
+/* Fix for SweetAlert appearing behind modals */
+div:where(.swal2-container) {
+    z-index: 9999 !important;
+}
