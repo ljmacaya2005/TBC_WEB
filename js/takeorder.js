@@ -307,43 +307,70 @@ window.processPayment = async () => {
 };
 
 async function deductStocksFromSupabase() {
+    console.log("Attempting to deduct stocks...");
     try {
         // 1. Core Ingredients Deduction
         const menuIds = [...new Set(cart.map(i => i.id))];
-        const { data: mapping } = await window.sb.from('menu_ingredients').select('*').in('menu_id', menuIds);
+        if (menuIds.length > 0) {
+            const { data: mapping, error: mapError } = await window.sb.from('menu_ingredients').select('*').in('menu_id', menuIds);
 
-        for (const item of cart) {
-            // Deduct Ingredients
-            if (mapping) {
-                const ings = mapping.filter(m => m.menu_id === item.id);
-                for (const ing of ings) {
-                    const totalDeduct = ing.quantity * item.qty;
-                    const { data: stockItem } = await window.sb.from('stocks').select('quantity').eq('stock_pk', ing.stock_pk).single();
-                    if (stockItem) {
-                        await window.sb.from('stocks').update({
-                            quantity: Math.max(0, stockItem.quantity - totalDeduct),
-                            updated_at: new Date()
-                        }).eq('stock_pk', ing.stock_pk);
+            if (mapError) {
+                console.error("Error fetching menu_ingredients:", mapError);
+            } else if (mapping && mapping.length > 0) {
+                for (const item of cart) {
+                    const ings = mapping.filter(m => m.menu_id === item.id);
+                    for (const ing of ings) {
+                        const totalDeduct = ing.quantity * item.qty;
+                        const { data: stockItem, error: stockFetchError } = await window.sb.from('stocks').select('quantity').eq('stock_pk', ing.stock_pk).single();
+
+                        if (stockFetchError) {
+                            console.warn(`Could not fetch stock for ingredient PK ${ing.stock_pk}:`, stockFetchError);
+                            continue;
+                        }
+
+                        if (stockItem) {
+                            const newQty = Math.max(0, parseFloat((stockItem.quantity - totalDeduct).toFixed(2))); // Prevent negative and float precision issues
+                            const { error: updateError } = await window.sb.from('stocks').update({
+                                quantity: newQty,
+                                updated_at: new Date()
+                            }).eq('stock_pk', ing.stock_pk);
+
+                            if (updateError) console.error(`Failed to update stock PK ${ing.stock_pk}:`, updateError);
+                            else console.log(`Deducted ${totalDeduct} from stock PK ${ing.stock_pk}. New Qty: ${newQty}`);
+                        }
                     }
-                }
-            }
 
-            // 2. Add-ons Stock Deduction
-            for (const addon of item.selectedAddons) {
-                if (addon.stock_pk && addon.stock_quantity > 0) {
-                    const totalDeduct = addon.stock_quantity * item.qty;
-                    const { data: stockItem } = await window.sb.from('stocks').select('quantity').eq('stock_pk', addon.stock_pk).single();
-                    if (stockItem) {
-                        await window.sb.from('stocks').update({
-                            quantity: Math.max(0, stockItem.quantity - totalDeduct),
-                            updated_at: new Date()
-                        }).eq('stock_pk', addon.stock_pk);
+                    // 2. Add-ons Stock Deduction (Inside loop since it's per cart item)
+                    if (item.selectedAddons && item.selectedAddons.length > 0) {
+                        for (const addon of item.selectedAddons) {
+                            if (addon.stock_pk && addon.stock_quantity > 0) {
+                                const totalDeduct = addon.stock_quantity * item.qty;
+                                const { data: stockItem, error: stockFetchError } = await window.sb.from('stocks').select('quantity').eq('stock_pk', addon.stock_pk).single();
+
+                                if (stockFetchError) {
+                                    console.warn(`Could not fetch stock for addon PK ${addon.stock_pk}:`, stockFetchError);
+                                    continue;
+                                }
+
+                                if (stockItem) {
+                                    const newQty = Math.max(0, parseFloat((stockItem.quantity - totalDeduct).toFixed(2)));
+                                    const { error: updateError } = await window.sb.from('stocks').update({
+                                        quantity: newQty,
+                                        updated_at: new Date()
+                                    }).eq('stock_pk', addon.stock_pk);
+
+                                    if (updateError) console.error(`Failed to update addon stock PK ${addon.stock_pk}:`, updateError);
+                                    else console.log(`Deducted ${totalDeduct} from addon stock PK ${addon.stock_pk}. New Qty: ${newQty}`);
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     } catch (e) {
-        console.warn("Stock deduction failed:", e);
+        console.error("Stock deduction failed critcally:", e);
+        Swal.fire('Warning', 'Order placed, but stock deduction encountered an error. Please check inventory manually.', 'warning');
     }
 }
 

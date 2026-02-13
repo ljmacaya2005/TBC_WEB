@@ -372,6 +372,8 @@ async function renderIngredientsList() {
     }
 
     panel.style.display = 'block';
+    const addBtn = document.getElementById('mcAddIngredientBtn');
+    if (addBtn) addBtn.style.display = 'inline-flex';
     const menuItem = products.find(p => p.menu_id === selectedMenuItemId);
     headerTitle.textContent = `Ingredients for "${menuItem?.product_name || ''}"`;
 
@@ -452,7 +454,8 @@ window.handleIngredientFormSubmit = async (e) => {
         closeIngredientModal();
         Swal.fire('Saved', 'Ingredient record updated', 'success');
     } catch (err) {
-        Swal.fire('Error', 'Ensure "menu_ingredients" table exists in Supabase. Details: ' + err.message, 'error');
+        console.error(err);
+        Swal.fire('Error', 'Supabase Error: ' + err.message + '. \n\nTip: If the table exists, try reloading the Schema Cache in Supabase Settings > API.', 'error');
     }
 };
 
@@ -679,7 +682,7 @@ function setupStockDropdown() {
 
     trigger?.addEventListener('click', (e) => {
         e.stopPropagation();
-        document.getElementById('ingredientStockDropdownMenu').classList.toggle('active');
+        document.getElementById('ingredientStockDropdown').classList.toggle('active');
     });
 
     searchInput?.addEventListener('input', (e) => {
@@ -710,7 +713,7 @@ function populateStockDropdown(selectedStockPk, filter = '') {
             hidden.value = s.stock_pk;
             label.textContent = s.stock_name;
             document.getElementById('ingredientUnit').value = s.unit;
-            document.getElementById('ingredientStockDropdownMenu').classList.remove('active');
+            document.getElementById('ingredientStockDropdown').classList.remove('active');
         });
         container.appendChild(opt);
     });
@@ -736,7 +739,7 @@ function setupAddonStockDropdown() {
 
     trigger?.addEventListener('click', (e) => {
         e.stopPropagation();
-        document.getElementById('addonStockDropdownMenu').classList.toggle('active');
+        document.getElementById('addonStockDropdown').classList.toggle('active');
     });
 
     searchInput?.addEventListener('input', (e) => {
@@ -768,7 +771,7 @@ function populateAddonStockDropdown(selectedStockPk, filter = '') {
             hidden.value = s.stock_pk;
             label.textContent = s.stock_name;
             if (unitInput) unitInput.value = s.unit;
-            document.getElementById('addonStockDropdownMenu').classList.remove('active');
+            document.getElementById('addonStockDropdown').classList.remove('active');
         });
         container.appendChild(opt);
     });

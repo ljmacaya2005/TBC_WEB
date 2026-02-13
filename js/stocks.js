@@ -57,9 +57,9 @@ async function fetchStocksData() {
     }
 }
 
-function calcStatus(qty) {
+function calcStatus(qty, reorderLevel = 10) {
     if (qty <= 0) return 'Out of Stock';
-    if (qty <= LOW_STOCK_THRESHOLD) return 'Low Stock';
+    if (qty <= reorderLevel) return 'Low Stock';
     return 'In Stock';
 }
 
@@ -79,6 +79,7 @@ function renderStocks() {
             created_at: s.created_at ? new Date(s.created_at).toLocaleDateString() : '--',
             quantity: s.quantity,
             unit: s.unit || 'pcs',
+            reorder_level: s.reorder_level || 10,
             type: 'ingredients'
         };
     });
@@ -128,7 +129,8 @@ function renderStocks() {
         </td></tr>`;
     } else {
         htmlContent = combined.map(item => {
-            const status = calcStatus(item.quantity);
+            const reorderLevel = item.reorder_level || 10;
+            const status = calcStatus(item.quantity, reorderLevel);
             const statusClass = status.toLowerCase().replace(/ /g, '-');
             const displayCategory = item.type === 'ingredients' ? item.category : 'Add-ons';
 
@@ -143,7 +145,7 @@ function renderStocks() {
                 </td>
                 <td data-label="Created At" style="font-size: 0.85rem; opacity: 0.6;">${item.created_at}</td>
                 <td data-label="Quantity">
-                    <span style="${item.quantity <= LOW_STOCK_THRESHOLD && item.type === 'ingredients' ? 'color: #e74c3c; font-weight: 800;' : 'font-weight: 600;'}">
+                    <span style="${item.quantity <= reorderLevel && item.type === 'ingredients' ? 'color: #e74c3c; font-weight: 800;' : 'font-weight: 600;'}">
                         ${item.type === 'ingredients' ? item.quantity : '--'}
                     </span>
                 </td>
@@ -202,8 +204,9 @@ window.handleStockSubmit = async (e) => {
     e.preventDefault();
     const itemName = stockForm.elements['itemName'].value.trim();
     const categoryId = categorySelect.value;
-    const quantity = parseInt(stockForm.elements['quantity'].value) || 0;
+    const quantity = parseFloat(stockForm.elements['quantity'].value) || 0;
     const unit = stockForm.elements['unit'].value;
+    const reorderLevel = parseInt(stockForm.elements['reorderLevel'].value) || 10;
 
     try {
         Swal.fire({ title: 'Saving...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -212,6 +215,7 @@ window.handleStockSubmit = async (e) => {
             category_id: categoryId,
             quantity: quantity,
             unit: unit,
+            reorder_level: reorderLevel,
             updated_at: new Date()
         };
 
@@ -250,6 +254,7 @@ window.editStock = (pk) => {
     stockForm.elements['itemName'].value = item.stock_name;
     stockForm.elements['quantity'].value = item.quantity;
     stockForm.elements['unit'].value = item.unit;
+    stockForm.elements['reorderLevel'].value = item.reorder_level || 10;
 
     document.getElementById('stockModalOverlay').classList.add('show');
 };
